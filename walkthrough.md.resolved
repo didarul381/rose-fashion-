@@ -1,0 +1,64 @@
+# Walkthrough: Govaly Enterprise Single-Vendor eCommerce System
+
+An enterprise-grade eCommerce platform similar to Govaly built using Laravel 11, Inertia.js, React 18, and Tailwind CSS. The assets have compiled successfully.
+
+---
+
+## 1. System Components & Architecture
+
+### Relational Database Schema
+Implemented in a single relational migration:
+- **`users`**: Customer profiles containing `role` ('admin', 'customer'), and balance columns.
+- **`categories`**: Nested self-referencing hierarchical structure (parent and child categories).
+- **`products`**: Supports simple, variable (sizes/colors), digital, and combo bundle product types.
+- **`product_variants`**: Maps SKU, stock levels, and distinct pricing options.
+- **`homepage_sections`**: Contains drag-and-drop homepage structures parsed dynamically.
+- **`coupons`**, **`orders`**, **`order_items`**: Transaction logging, coupon checks, and invoices.
+- **`reviews`**, **`questions`**: Customer reviews, QA support channels.
+- **`settings`**: Configuration table groups (general, theme).
+- **`wallet_transactions`**, **`loyalty_points`**: Ledger for deposits, loyalty rewards.
+
+### Controllers & Business Logic
+- [ShopController.php](file:///d:/wamp64/www/my-projects/govaly/app/Http/Controllers/ShopController.php): Controls categories pagination, instant AJAX search autocomplete, and structured JSON-LD Schema markup.
+- [CartController.php](file:///d:/wamp64/www/my-projects/govaly/app/Http/Controllers/CartController.php): Dynamic weight/zone-based shipping cost calculator and coupon discounts validations.
+- [CheckoutController.php](file:///d:/wamp64/www/my-projects/govaly/app/Http/Controllers/CheckoutController.php): Validates stocks, decrements inventories, debits wallets, adds loyalty points, and handles mock bKash/Nagad/Stripe checkouts.
+- [CustomerDashboardController.php](file:///d:/wamp64/www/my-projects/govaly/app/Http/Controllers/CustomerDashboardController.php): Manages order histories, live status trackers, and deposit simulations.
+- [AdminDashboardController.php](file:///d:/wamp64/www/my-projects/govaly/app/Http/Controllers/AdminDashboardController.php): Calculates metrics, monthly revenues (ChartJS), manages homepage layouts, settings, and XML Sitemap generators.
+
+---
+
+## 2. Frontend React 18 UI Structure
+
+All views use premium Outfit typography, orange/slate accents, glassmorphic headers, and micro-interactions:
+- **Stateful Shopping Cart**: [CartContext.jsx](file:///d:/wamp64/www/my-projects/govaly/resources/js/Contexts/CartContext.jsx) synchronizes items, quantities, and coupons with `localStorage` across page transitions.
+- **Public Layout**: [ShopLayout.jsx](file:///d:/wamp64/www/my-projects/govaly/resources/js/Layouts/ShopLayout.jsx) provides a sticky promo bar, autocomplete search (with voice-recognition support), categories dropdown mega menus, and slide-out cart panels.
+- **Homepage Builder**: [Welcome.jsx](file:///d:/wamp64/www/my-projects/govaly/resources/js/Pages/Welcome.jsx) dynamically renders Hero Sliders, Flash Deals (with real countdown timers), category grids, video frames, blogs, and testimonials.
+- **Catalog Filter Grid**: [Category.jsx](file:///d:/wamp64/www/my-projects/govaly/resources/js/Pages/Shop/Category.jsx) filters products by min/max prices and popularity/newest sorts.
+- **Product Detail**: [ProductDetail.jsx](file:///d:/wamp64/www/my-projects/govaly/resources/js/Pages/Shop/ProductDetail.jsx) implements magnifying image zoom, variant selectors (Size/Color choices that adjust SKU/prices/stocks), review ratings, and a bottom sticky buy box.
+- **Checkout Process**: [Checkout.jsx](file:///d:/wamp64/www/my-projects/govaly/resources/js/Pages/Shop/Checkout.jsx) updates delivery costs on city change, supports coupon and wallet/loyalty code balances, and submits order forms.
+- **Invoice Receipts**: [Success.jsx](file:///d:/wamp64/www/my-projects/govaly/resources/js/Pages/Shop/Success.jsx) & [OrderView.jsx](file:///d:/wamp64/www/my-projects/govaly/resources/js/Pages/Customer/OrderView.jsx) render print-ready summary tables.
+- **Operations Dashboard**: [Dashboard.jsx](file:///d:/wamp64/www/my-projects/govaly/resources/js/Pages/Admin/Dashboard.jsx) renders Line charts tracking store monthly revenues.
+- **Page Builder Controller**: [PageBuilder.jsx](file:///d:/wamp64/www/my-projects/govaly/resources/js/Pages/Admin/PageBuilder.jsx) enables sorting layout indices with arrows, and toggling sections.
+- **Store Configs**: [Settings.jsx](file:///d:/wamp64/www/my-projects/govaly/resources/js/Pages/Admin/Settings.jsx) modifies parameters and compiles sitemaps.
+
+---
+
+## 3. Configuration & Startup Guide
+
+### Development server
+1. Spin up the local PHP server:
+   ```bash
+   php artisan serve
+   ```
+2. Start the Vite hot-reload bundler:
+   ```bash
+   npm run dev
+   ```
+
+### Default Login Credentials
+- **Admin panel access**:
+  - Email: `admin@govaly.com`
+  - Password: `password`
+- **Customer account access**:
+  - Email: `customer@govaly.com`
+  - Password: `password`

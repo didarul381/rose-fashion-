@@ -1,0 +1,1 @@
+\App\Models\Courier::firstOrCreate(['code' =, ['name' = Courier', 'inside_city_charge' =, 'outside_city_charge' =, 'is_default' =, 'is_active' =; 

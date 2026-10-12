@@ -1,0 +1,47 @@
+# Implementation Plan - Govaly eCommerce Platform
+
+An enterprise-grade, single-vendor eCommerce platform inspired by Govaly. Built on Laravel 11 (REST API, Inertia) and React 18, utilizing Tailwind CSS, Framer Motion, and SQLite.
+
+## 1. System Architecture
+
+```mermaid
+graph TD
+    Client[React Frontend + Inertia.js] <--> WebServer[Nginx / Laravel Server]
+    WebServer <--> Controllers[Laravel Controllers & Middleware]
+    Controllers <--> Services[Service & Repository Layers]
+    Services <--> DB[(SQLite Database)]
+    Services <--> Cache[(Redis/SQLite Cache)]
+```
+
+## 2. Database Schema (Schema Design)
+
+The database contains the following tables:
+- **`categories`**: Nested hierarchy (parent/child) with SEO fields and mega-menu options.
+- **`products`**: Product model supporting simple, variable, digital, and bundle types, inventory tracking, weight, and SEO.
+- **`product_images`**: Carousel & zoom galleries.
+- **`product_attributes` & `product_attribute_values`**: Attribute management (Color, Size, Weight).
+- **`product_variants` & `product_variant_attributes`**: For variable product pricing and stock.
+- **`homepage_sections`**: Editable page builder sections (Hero, Flash Sale, Featured Products).
+- **`orders` & `order_items`**: Order state transitions (Pending, Processing, Completed, Cancelled, Refunded) and checkout details.
+- **`coupons`**: Discount engine supporting percentage or fixed-amount discounts.
+- **`reviews` & `questions`**: Customer interaction modules.
+- **`loyalty_points` & `wallet`**: Loyalty tracking & customer credit.
+- **`settings`**: Dynamic theme variables, typography, currencies, SMTP, pixels, and tracking tags.
+
+---
+
+## 3. Implementation Steps
+
+1. **Database Migrations & Seeders**: Setup all eCommerce schemas and seed sample products, attributes, homepage layouts, and initial settings.
+2. **Backend Domain Models**: Create models, relations, query scopes, and validation rules.
+3. **Core Services & Controllers**:
+   - `ProductController` (Filtering, search, category navigation, dynamic SEO metadata, schema markup).
+   - `CartController` & `CheckoutController` (Address billing, shipping methods, coupon engine, bKash/Nagad/Stripe mock transactions).
+   - `OrderController` & `CustomerDashboardController` (Loyalty points, wallet, order tracking, invoice generation).
+   - `AdminDashboardController` & `AdminManagementController` (Homepage sections builder, CRUDs, order management, pixels).
+4. **Frontend Architecture & Components**:
+   - **Layouts**: `ShopLayout` (with header mega-menu, announcement bar, AJAX side-cart, dynamic footer) and `AdminLayout` (analytics sidebar).
+   - **Home Page**: Interactive widgets for sections (slider, flash sale, product grids, video, blog, etc.) that render dynamically based on admin configs.
+   - **Product Details Page**: Advanced zoom gallery, variable selection triggers, sticky buy box, reviews, and Q&A.
+   - **Checkout Page**: Single-page AJAX checkout with payment methods, guest toggle, and address auto-save.
+   - **Admin Panel**: Dashboard charts, dynamic page builder, drag-and-drop orders, settings.

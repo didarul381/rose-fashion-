@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --primary-color: #f97316;
+    --secondary-color: #1e293b;
+    --font-family: 'Outfit', sans-serif;
+    --border-radius: 16px;
+}
+
+body {
+    font-family: var(--font-family), sans-serif !important;
+}
+
+/* Global Dynamic Border Radius Overrides */
+.rounded-3xl {
+    border-radius: calc(var(--border-radius) * 1.5) !important;
+}
+.rounded-2xl {
+    border-radius: var(--border-radius) !important;
+}
+.rounded-xl {
+    border-radius: calc(var(--border-radius) * 0.75) !important;
+}
+.rounded-lg {
+    border-radius: calc(var(--border-radius) * 0.5) !important;
+}
+.rounded-md {
+    border-radius: calc(var(--border-radius) * 0.375) !important;
+}
+.rounded-sm {
+    border-radius: calc(var(--border-radius) * 0.18) !important;
+}
+
+/* Admin Theme Utility Classes */
+:root {
+    --admin-primary: #f97316;
+    --admin-primary-hover: #ea580c;
+    --admin-primary-light: rgba(249, 115, 22, 0.1);
+    --admin-primary-shadow: rgba(249, 115, 22, 0.15);
+    --admin-accent: #14b8a6;
+    --admin-accent-light: rgba(20, 184, 166, 0.1);
+    --admin-sidebar-bg: #0f172a;
+    --admin-sidebar-hover: #1e293b;
+    --admin-sidebar-text: #94a3b8;
+    --admin-sidebar-active-bg: #f97316;
+    --admin-sidebar-active-text: #ffffff;
+    --admin-card-header: #f8fafc;
+}
+
+.admin-theme-bg {
+    background-color: var(--admin-primary) !important;
+}
+.admin-theme-bg-hover:hover {
+    background-color: var(--admin-primary-hover) !important;
+}
+.admin-theme-text {
+    color: var(--admin-primary) !important;
+}
+.admin-theme-border {
+    border-color: var(--admin-primary) !important;
+}
+.admin-theme-shadow {
+    box-shadow: 0 10px 15px -3px var(--admin-primary-shadow), 0 4px 6px -4px var(--admin-primary-shadow) !important;
+}
+.admin-theme-accent-bg {
+    background-color: var(--admin-accent) !important;
+}
+.admin-theme-accent-text {
+    color: var(--admin-accent) !important;
+}
+.admin-theme-accent-light-bg {
+    background-color: var(--admin-accent-light) !important;
+}
+
+/* Prevent horizontal layout shifts / jitter when content height changes or during navigation */
+html {
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    html:focus-within {
+        scroll-behavior: smooth;
+    }
+}
+
+body { margin: 0; background: #f4f7fb !important; color: #172033 !important; font-family: Inter, "Segoe UI", sans-serif !important; }
+.store-container { width: min(1400px, calc(100% - 40px)); margin-inline: auto; }
+@media (max-width: 640px) { .store-container { width: min(100% - 24px, 1400px); } }
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
