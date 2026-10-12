@@ -142,12 +142,24 @@ const settingDropdowns = {
 
 const defaultSettingsSchema = {
     hero_slider: {
-        title: 'Main Promotional Banner',
-        slides: [{ image: '', title: 'New Banner Offer', subtitle: 'Featured promotion', link: '#products', button_text: 'Shop now' }],
-        side_banners: [],
-        layout_type: 'three_banners', autoplay: 'yes', autoplay_speed: '5000', navigation_style: 'both',
-        transition_effect: 'fade', button_text: 'Shop now',
-        section_background_color: '#ffffff', border_radius: 'rounded-2xl', border_style: 'none', border_color: '#e2e8f0', shadow: 'shadow-none'
+        badge_text: 'Authentic Traditional & Party Wear',
+        headline: 'Timeless Elegance & Royal',
+        highlight_word: 'Heritage',
+        subtitle: 'Shop the finest Dhakai Jamdani sarees, bridal lehengas, and designer party wear sarees directly from our Dhaka New Market showroom.',
+        primary_button_text: 'Explore Collection',
+        primary_button_link: '#shop-products',
+        secondary_button_text: 'Message on Facebook',
+        secondary_button_link: 'https://www.facebook.com/share/18Ttrev5mS/',
+        trust_badge_1: '100% Authentic Quality',
+        trust_badge_2: 'New Market Dhaka',
+        trust_badge_3: 'Fast BD Delivery',
+        card_badge: 'New Arrival',
+        card_image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&q=80&w=800',
+        card_tag: 'Handloom Masterpiece',
+        card_title: 'Royal Crimson Jamdani',
+        card_price: 'Starting from ৳ 4,500',
+        card_location: 'Dhaka New Market Shop #214',
+        card_chat_link: 'https://www.facebook.com/share/18Ttrev5mS/'
     },
     product_shelf: {
         title: 'Featured products', title_color: '#102f58', product_source: 'featured', product_limit: '10',
@@ -157,25 +169,17 @@ const defaultSettingsSchema = {
         section_background_color: '#ffffff', border_radius: 'rounded-2xl', border_style: 'none', border_color: '#e2e8f0', shadow: 'shadow-none'
     },
     products_tabs: {
-        title: 'PRODUCTS FOR YOU',
-        title_color: '#42bce8',
-        product_source: 'latest',
-        title_font_size: 'text-base md:text-lg',
-        title_font_weight: 'font-bold',
-        categories: '',
-        active_tab_bg_color: '#42bce8',
-        active_tab_text_color: '#ffffff',
-        inactive_tab_text_color: '#42bce8',
-        item_border_color: '#42bce8',
-        border_radius: 'rounded-full',
-        active_border_radius: 'rounded-full',
-        container_border_radius: 'rounded-3xl',
-        product_limit: '18',
-        show_button: 'yes',
-        button_text: 'VIEW MORE PRODUCTS',
-        button_link: '/shop',
-        is_sticky: 'yes',
-        section_background_color: '#ffffff', border_style: 'none', border_color: '#e2e8f0', shadow: 'shadow-none'
+        tag: 'Handpicked Selections',
+        title: 'Best Sellers & New Arrivals',
+        anchor_id: 'shop-products',
+        product_source: 'all',
+        product_limit: '12',
+        tabs: [
+            { label: 'All Items', slug: 'all' },
+            { label: 'Jamdani', slug: 'jamdani' },
+            { label: 'Lehengas', slug: 'lehengas' },
+            { label: 'Designer Sarees', slug: 'designer-sarees' }
+        ]
     },
     feature_badges: {
         title: 'Service Benefits', anchor_id: 'service',
@@ -190,13 +194,36 @@ const defaultSettingsSchema = {
         section_background_color: '#ffffff', border_radius: 'rounded-2xl', border_style: 'none', border_color: '#e2e8f0', shadow: 'shadow-none'
     },
     category_grid: {
-        title: 'Shop By Category', title_color: '#102f58', design_style: 'cards', title_position: 'left', anchor_id: 'categories', use_catalog_categories: 'yes',
-        mobile_layout: 'slider',
-        title_font_size: 'text-lg md:text-xl', title_font_weight: 'font-extrabold',
-        limit: '8', show_button: 'yes', button_text: 'More Products', button_link: '/main-categories',
-        items: [], section_background_color: '#ffffff', item_border_radius: 'rounded-2xl', item_background_color: '#f8fafc',
-        item_font_size: 'text-xs md:text-sm', item_font_color: '#334155', item_border_color: '#e2e8f0',
-        border_radius: 'rounded-2xl', border_style: 'none', border_color: '#e2e8f0', shadow: 'shadow-none'
+        tag: 'Curated Collections',
+        title: 'Explore Our Signature Categories',
+        subtitle: 'From traditional Bangladeshi handlooms to modern designer party wear sarees and lehengas.',
+        anchor_id: 'collections',
+        items: [
+            {
+                title: 'Premium Jamdani Sarees',
+                subtitle: 'Handwoven masterclass drapes carrying rich cultural heritage of Bengal.',
+                image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&q=80&w=600',
+                badge: 'Handloom',
+                link: '#shop-products',
+                category_slug: 'jamdani'
+            },
+            {
+                title: 'Bridal & Party Lehengas',
+                subtitle: 'Stunning embroidered lehengas tailored for weddings, receptions, and festivals.',
+                image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=600',
+                badge: 'Bridal & Party',
+                link: '#shop-products',
+                category_slug: 'lehengas'
+            },
+            {
+                title: 'Designer Sarees',
+                subtitle: 'Georgette, silk, chiffon, and katan sarees with sophisticated zari work.',
+                image: 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&q=80&w=600',
+                badge: 'Exclusive',
+                link: '#shop-products',
+                category_slug: 'designer-sarees'
+            }
+        ]
     },
     signature_banners: {
         title: 'Featured Collections', title_color: '#102f58',
@@ -235,10 +262,30 @@ const defaultSettingsSchema = {
         ]
     },
     experience_features: {
-        eyebrow: 'Built for your shopping journey', title: 'A smooth storefront experience.',
-        description: 'Configure the messages that explain your customer experience.',
-        background_color: '#102f58', border_radius: 'rounded-2xl', border_style: 'none', border_color: '#e2e8f0', shadow: 'shadow-none',
-        items: [{ title: 'Best Deals', text: 'Find value-for-money products faster' }, { title: 'Easy Shopping', text: 'Add to cart with confidence' }]
+        tag: 'Why Customers Trust Rose Fashion',
+        title: 'Traditional Elegance, Uncompromised Trust',
+        subtitle: 'Visit our flagship shop in Dhaka New Market or order online with guaranteed fabric authenticity.',
+        anchor_id: 'about',
+        items: [
+            {
+                title: 'Direct From Dhaka New Market',
+                description: 'Physical showroom at Shop #214, 1st Floor, Dhaka New Market. Experience authentic quality before buying.',
+                icon: 'Store'
+            },
+            {
+                title: '100% Genuine Handloom & Fabrics',
+                description: 'Original pure threads, intricate zari work, and certified Dhakai Jamdani weaves.',
+                icon: 'ShieldCheck'
+            },
+            {
+                title: 'Nationwide Home Delivery',
+                description: 'Safe cash on delivery all over Bangladesh with easy inspection upon delivery.',
+                icon: 'Truck'
+            }
+        ],
+        testimonial_quote: '"The Dhakai Jamdani I purchased from Rose Fashion is truly magnificent. The craftsmanship and fabric purity are extraordinary."',
+        testimonial_author: 'Sadia Rahman',
+        testimonial_location: 'Dhanmondi, Dhaka'
     },
     content_columns: {
         title: 'About Our Online Store', title_color: '#102f58', description: 'Introduce your store and explain why customers should shop with you.',
@@ -304,11 +351,12 @@ export default function AdminPageBuilder({ sections, categories = [], activeBran
     const handleEditClick = (section) => {
         setEditingSection(section);
         const defaults = defaultSettingsSchema[section.type] || {};
-        const mergedSettings = {
-            ...defaults,
-            ...(section.settings || {})
-        };
-        if (section.type === 'hero_slider') {
+        const hasExistingSettings = section.settings && Object.keys(section.settings).length > 0;
+        const mergedSettings = hasExistingSettings
+            ? { ...section.settings }
+            : { ...defaults };
+
+        if (section.type === 'hero_slider' && Array.isArray(mergedSettings.slides)) {
             if (!Array.isArray(mergedSettings.side_banners)) {
                 mergedSettings.side_banners = [];
             }
@@ -355,11 +403,13 @@ export default function AdminPageBuilder({ sections, categories = [], activeBran
         }
         if (key === 'slides' || key === 'side_banners') return ['title', 'subtitle', 'image', 'link', 'button_text'];
         if (key === 'shelves') return ['title', 'product_source', 'product_limit', 'category_slug', 'anchor_id', 'button_text', 'button_link'];
+        if (key === 'tabs') return ['label', 'slug'];
         if (key === 'items') {
-            if (editingSection?.type === 'category_grid') return ['name', 'description', 'image', 'link', 'sub_count'];
+            if (editingSection?.type === 'category_grid') return ['title', 'subtitle', 'image', 'badge', 'link', 'category_slug'];
             if (editingSection?.type === 'signature_banners') return ['title', 'subtitle', 'image', 'link', 'button_text'];
             if (editingSection?.type === 'top_brands') return ['title', 'brand', 'image', 'link'];
             if (editingSection?.type === 'content_columns') return ['title', 'text', 'link', 'link_text'];
+            if (editingSection?.type === 'experience_features') return ['title', 'description', 'icon'];
             return ['title', 'text'];
         }
         return ['title', 'image', 'link'];
@@ -874,6 +924,13 @@ export default function AdminPageBuilder({ sections, categories = [], activeBran
                                                             />
                                                         </div>
                                                     </div>
+                                                ) : (key.includes('subtitle') || key.includes('description') || key.includes('quote') || (key.includes('text') && !key.includes('button') && !key.includes('badge'))) ? (
+                                                    <textarea
+                                                        rows={3}
+                                                        value={val || ''}
+                                                        onChange={e => handleSettingsChange(key, e.target.value)}
+                                                        className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-[#c2005f] transition-all"
+                                                    />
                                                 ) : (
                                                     <input
                                                         type="text"

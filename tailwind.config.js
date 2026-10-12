@@ -12,8 +12,24 @@ export default {
 
     theme: {
         extend: {
+            colors: {
+                roseBrand: {
+                    50: '#fff1f2',
+                    100: '#ffe4e6',
+                    500: '#f43f5e',
+                    600: '#e11d48',
+                    700: '#be123c',
+                    800: '#9f1239',
+                    900: '#881337',
+                },
+                goldAccent: {
+                    500: '#d97706',
+                    600: '#b45309',
+                }
+            },
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Inter', ...defaultTheme.fontFamily.sans],
+                serif: ['Playfair Display', 'serif'],
             },
         },
     },

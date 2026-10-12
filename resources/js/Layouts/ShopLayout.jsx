@@ -98,7 +98,7 @@ export default function ShopLayout({ children, hideMobileBottomNav = false }) {
 
     const primaryColor = global_settings.primary_color || global_settings.theme_primary || '#102f58';
     const storeName = global_settings.theme_name || global_settings.store_name || global_settings.site_title || 'Malamal';
-    const logo = global_settings.header_logo_image || global_settings.store_logo;
+    const logo = global_settings.header_logo_image || global_settings.store_logo || global_settings.logo || '/logo.png';
     const phone = global_settings.contact_phone || '+880 9638212121';
     const email = global_settings.contact_email || 'support@example.com';
     const address = global_settings.store_address_1 || global_settings.contact_address || 'Dhaka, Bangladesh';
@@ -246,194 +246,399 @@ export default function ShopLayout({ children, hideMobileBottomNav = false }) {
         ? [...categoryNavItems, ...featuredExtraNavItems]
         : (customNavItems.length ? customNavItems : defaultNavItems);
 
+    const isRoseFashionHeader = global_settings.header_design === 'rose_fashion' ||
+        global_settings.theme_name === 'Rose Fashion' ||
+        global_settings.store_name === 'Rose Fashion';
+
+    const facebookUrl = global_settings.footer_facebook || "https://www.facebook.com/share/18Ttrev5mS/";
+    const announcementText = global_settings.announcement_text || "✨ Welcome to Rose Fashion (Dhaka New Market)! Enjoy Nationwide Delivery across Bangladesh.";
+    const announcementLink = global_settings.announcement_link || facebookUrl;
+    const announcementLinkText = global_settings.announcement_link_text || "Message on FB to Order!";
+
     return (
         <div className={`${mobileBottomNavEnabled ? 'pb-20 md:pb-0' : ''} min-h-screen overflow-x-clip bg-slate-50 text-slate-900`}>
-            <header ref={headerRef} className={`${headerSticky ? 'sticky top-0' : 'relative'} z-40 ${isHumanbeingHeader ? 'border-b border-cyan-500/20 shadow-[0_8px_22px_rgba(6,182,212,0.18)]' : 'border-b border-slate-200 shadow-sm backdrop-blur-xl'}`} style={{ fontFamily: headerFontFamily, backgroundColor: isHumanbeingHeader ? modernHeaderBgColor : headerBgColor }}>
-                <div className={`store-container flex items-center ${isHumanbeingHeader ? 'h-[66px] gap-3 md:h-[78px] md:gap-4 lg:gap-6' : 'h-[74px] gap-2.5 sm:gap-3 lg:gap-3.5 xl:gap-4'}`} style={{ backgroundColor: isHumanbeingHeader ? modernHeaderBgColor : headerBgColor, color: isHumanbeingHeader ? modernHeaderTextColor : headerTextColor }}>
-                    <button onClick={() => setMenuOpen(true)} className={isHumanbeingHeader ? 'grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition hover:bg-white/20 lg:hidden' : 'grid h-10 w-10 shrink-0 place-items-center rounded-full border border-slate-200 lg:hidden'} style={{ color: isHumanbeingHeader ? modernHeaderTextColor : headerTextColor }} aria-label="Open menu"><Menu className={isHumanbeingHeader ? 'h-7 w-7' : 'h-5 w-5'} /></button>
-                    <Link href={route('home')} className={isHumanbeingHeader ? 'flex min-w-0 flex-1 items-center justify-center md:justify-start md:flex-none md:min-w-[210px]' : 'flex min-w-0 flex-1 items-center justify-center md:flex-none md:shrink-0 md:justify-start'}>
-                        {logo ? (
-                            <img
-                                src={logo}
-                                alt={storeName}
-                                className={isHumanbeingHeader ? 'max-h-12 w-auto max-w-[145px] object-contain sm:max-w-[170px] lg:max-w-[220px] mx-auto md:mx-0' : 'max-h-10 sm:max-h-11 md:max-h-12 w-auto max-w-[150px] sm:max-w-[175px] lg:max-w-[200px] xl:max-w-[220px] object-contain mx-auto md:mx-0'}
-                            />
-                        ) : (
-                            <span className="text-xl font-bold tracking-tight text-center md:text-left truncate" style={{ color: isHumanbeingHeader ? modernHeaderTextColor : headerTextColor }}>
-                                {headerLogoText}
-                            </span>
-                        )}
-                    </Link>
-                    {!isHumanbeingHeader && showHeaderCategoryMenu && <DesktopCategoryMenu categories={header_categories} open={categoriesOpen} setOpen={setCategoriesOpen} primaryColor={primaryColor} />}
-                    <form ref={searchRef} onSubmit={submitSearch} className={isHumanbeingHeader ? "relative hidden min-w-0 flex-[0_1_760px] md:block" : "relative hidden min-w-0 md:flex flex-1"}>
-                        <div className={isHumanbeingHeader ? 'flex h-[44px] overflow-hidden rounded-full bg-white shadow-[0_8px_18px_rgba(8,145,178,0.16)] ring-1 ring-white/25' : 'flex h-[42px] xl:h-[46px] items-center overflow-hidden rounded-full border border-slate-200 bg-white shadow-sm w-full'}>
-                            {!isHumanbeingHeader && <Search className="ml-4 h-4 w-4 text-slate-400 shrink-0" />}
-                            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={isHumanbeingHeader ? 'Search for smartwatches, cotton polos, combos...' : 'Search for products...'} className={isHumanbeingHeader ? 'min-w-0 flex-1 border-0 bg-transparent px-3.5 text-sm font-medium text-slate-700 outline-none ring-0 placeholder:text-slate-400 focus:ring-0' : 'h-full min-w-0 flex-1 border-0 bg-transparent px-3 text-xs xl:text-sm outline-none ring-0 focus:ring-0'} />
-                            <button className={isHumanbeingHeader ? 'm-1 inline-flex items-center gap-1.5 rounded-full bg-[#08bde3] px-5 text-xs font-bold text-white shadow-[0_5px_12px_rgba(8,189,227,0.28)] transition hover:bg-[#06a9cc]' : 'h-full rounded-none px-4 xl:px-6 text-xs xl:text-sm font-bold text-white shrink-0 transition hover:opacity-90'} style={!isHumanbeingHeader ? { backgroundColor: primaryColor } : undefined}>{isHumanbeingHeader && <Search className="h-3.5 w-3.5" />}Search</button>
-                        </div>
-                        <SearchSuggestions suggestions={suggestions} money={money} onSelect={() => setSuggestions([])} />
-                    </form>
-                    <div className={isHumanbeingHeader ? 'ml-auto flex shrink-0 items-center gap-2 md:gap-3' : `flex shrink-0 items-center md:ml-auto w-10 md:w-auto justify-end ${showHeaderQuotation ? 'gap-1.5 sm:gap-2' : 'gap-2 sm:gap-2.5 xl:gap-3'}`}>
-                        {isHumanbeingHeader ? <>
-                            {showHeaderTrackOrder && <Link href={route('track-order')} className="hidden h-10 items-center rounded-full border border-white/25 bg-white/10 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-white/20 xl:flex">Track Order</Link>}
-                            {showHeaderWishlist && <button onClick={() => setWishlistOpen(true)} className="relative grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/10 transition hover:bg-white/20" aria-label="Wishlist"><Heart className="h-7 w-7" strokeWidth={2.1} />{wishlistItems.length ? <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-white px-1 text-[11px] font-black text-[#08bde3]">{wishlistItems.length}</span> : null}</button>}
-                            {showHeaderCart && <button onClick={() => setCartOpen(true)} className="relative grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/10 transition hover:bg-white/20" aria-label="Cart"><ShoppingBag className="h-7 w-7" strokeWidth={2.1} /><span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-white px-1 text-[11px] font-black text-[#08bde3]">{cartCount}</span></button>}
-                            <AccountMenu auth={auth} open={accountOpen} setOpen={setAccountOpen} accountRef={accountRef} variant="humanbeing" primaryColor={primaryColor} />
-                        </> : <>
-                            {showHeaderCompare && <Link href={compareUrl()} className={`hidden h-[40px] xl:h-[42px] items-center gap-1.5 rounded-full border border-slate-200 bg-white ${showHeaderQuotation ? 'px-2.5 xl:px-3.5' : 'px-3 xl:px-4'} text-xs font-bold lg:flex shrink-0`}><GitCompare className="h-3.5 w-3.5 xl:h-4 xl:w-4" />Compare {compareItems.length ? <span className="grid h-5 min-w-5 place-items-center rounded-full bg-[#ff4b19] px-1 text-[10px] text-white">{compareItems.length}</span> : ''}</Link>}
-                            {showHeaderWishlist && <button onClick={() => setWishlistOpen(true)} className={`hidden h-[40px] xl:h-[42px] items-center gap-1.5 rounded-full border border-slate-200 bg-white ${showHeaderQuotation ? 'px-2.5 xl:px-3.5' : 'px-3 xl:px-4'} text-xs font-bold lg:flex shrink-0`}><Heart className="h-3.5 w-3.5 xl:h-4 xl:w-4" />Wishlist {wishlistItems.length ? <span className="grid h-5 min-w-5 place-items-center rounded-full bg-[#ff4b19] px-1 text-[10px] text-white">{wishlistItems.length}</span> : ''}</button>}
-                            {showHeaderCart && (
-                                <>
-                                    {/* Mobile Cart Button: Circular button with badge over top-right corner */}
-                                    <button
-                                        type="button"
-                                        onClick={() => setCartOpen(true)}
-                                        className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm transition active:scale-95 md:hidden"
-                                        aria-label="Cart"
-                                    >
-                                        <span className="relative grid h-6 w-6 place-items-center">
-                                            <ShoppingCart className="h-5 w-5 text-slate-700" strokeWidth={2.2} />
-                                            {Number(cartCount || 0) > 0 && (
-                                                <span className="absolute -right-2.5 -top-1.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[#ff4b19] px-1 text-[10px] font-black leading-none text-white shadow-sm ring-2 ring-white">
-                                                    {cartCount > 99 ? '99+' : cartCount}
-                                                </span>
-                                            )}
-                                        </span>
-                                    </button>
+            {/* Top Announcement Bar */}
+            <div className="bg-gradient-to-r from-rose-900 via-rose-800 to-rose-900 text-white text-xs sm:text-sm py-2 px-4 text-center font-medium tracking-wide relative z-40">
+                <span>{announcementText} </span>
+                {announcementLink && (
+                    <a
+                        href={announcementLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline ml-2 hover:text-rose-200 transition font-semibold"
+                    >
+                        {announcementLinkText}
+                    </a>
+                )}
+            </div>
 
-                                    {/* Desktop Cart Button: Pill style with text */}
-                                    <button
-                                        type="button"
-                                        onClick={() => setCartOpen(true)}
-                                        className={`hidden md:flex h-[40px] xl:h-[42px] items-center gap-1.5 rounded-full border border-slate-200 bg-white ${showHeaderQuotation ? 'px-2.5 sm:px-3 xl:px-3.5' : 'px-3 sm:px-3.5 xl:px-4'} text-xs font-bold shrink-0`}
-                                    >
-                                        <ShoppingCart className="h-3.5 w-3.5 xl:h-4 xl:w-4" />
-                                        <span>Cart</span>
-                                        <span className="grid h-5 min-w-5 place-items-center rounded-full bg-[#ff4b19] px-1 text-[10px] text-white">{cartCount}</span>
-                                    </button>
-                                </>
-                            )}
-                            {showHeaderQuotation && (
-                                <Link
-                                    href={route('quotation.request')}
-                                    className="hidden h-[40px] xl:h-[42px] items-center rounded-full px-3.5 xl:px-4 text-xs font-extrabold text-white shadow-sm transition hover:opacity-90 active:scale-95 lg:flex shrink-0 whitespace-nowrap"
-                                    style={{ backgroundColor: primaryColor }}
-                                >
-                                    Quotation Request
+            {isRoseFashionHeader ? (
+                /* Rose Fashion Specific Main Header */
+                <header ref={headerRef} className="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm border-b border-rose-100/60 transition-all duration-300">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center justify-between h-20">
+                            {/* Logo */}
+                            <div className="flex items-center">
+                                <Link href={route('home')} className="group flex items-center">
+                                    <img
+                                        src={logo}
+                                        alt={storeName}
+                                        onError={(e) => {
+                                            if (!e.currentTarget.src.endsWith('/logo.png')) {
+                                                e.currentTarget.src = '/logo.png';
+                                            }
+                                        }}
+                                        className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover shadow-md group-hover:scale-110 transition duration-300"
+                                    />
                                 </Link>
+                            </div>
+
+                            {/* Desktop Navigation Links */}
+                            <nav className="hidden lg:flex items-center space-x-8 text-sm font-medium text-slate-700">
+                                <Link href={route('home')} className="text-rose-600 font-semibold hover:text-rose-700 transition">Home</Link>
+                                <a href="#collections" className="hover:text-rose-600 transition">Collections</a>
+                                <a href="#shop-products" className="hover:text-rose-600 transition">Jamdani Sarees</a>
+                                <a href="#shop-products" className="hover:text-rose-600 transition">Lehengas</a>
+                                <a href="#about" className="hover:text-rose-600 transition">About Us</a>
+                                <a href="#contact" className="hover:text-rose-600 transition">Contact</a>
+                            </nav>
+
+                            {/* Actions: Search, Cart & Mobile Menu Toggle */}
+                            <div className="flex items-center space-x-3 sm:space-x-4">
+                                <button
+                                    onClick={() => setMobileSearchOpen(true)}
+                                    className="p-2.5 text-slate-600 hover:text-rose-600 transition rounded-full hover:bg-rose-50 transform hover:scale-110 cursor-pointer"
+                                    title="Search"
+                                >
+                                    <Search className="w-5 h-5" />
+                                </button>
+                                <button
+                                    onClick={() => setCartOpen(true)}
+                                    className="relative p-2.5 text-slate-600 hover:text-rose-600 transition rounded-full hover:bg-rose-50 transform hover:scale-110 cursor-pointer"
+                                    title="Shopping Bag"
+                                >
+                                    <ShoppingBag className="w-5 h-5" />
+                                    <span className="absolute top-0 right-0 w-5 h-5 bg-rose-600 text-white text-[11px] font-bold rounded-full flex items-center justify-center shadow animate-pulse">
+                                        {cartCount}
+                                    </span>
+                                </button>
+                                {/* Facebook Page Quick Button */}
+                                <a
+                                    href={facebookUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="hidden sm:inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-sm hover:shadow-blue-600/30 transition transform hover:-translate-y-0.5"
+                                >
+                                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                    <span>FB Page</span>
+                                </a>
+                                <button
+                                    onClick={() => setMenuOpen(!menuOpen)}
+                                    className="lg:hidden p-2 text-slate-700 hover:text-rose-600 transition cursor-pointer"
+                                    aria-label="Toggle Menu"
+                                >
+                                    {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Mobile Menu Dropdown */}
+                    {menuOpen && (
+                        <div className="lg:hidden bg-white border-b border-slate-200 px-6 pt-4 pb-6 space-y-3 shadow-xl">
+                            <Link href={route('home')} onClick={() => setMenuOpen(false)} className="block text-rose-600 font-medium py-1">Home</Link>
+                            <a href="#collections" onClick={() => setMenuOpen(false)} className="block text-slate-700 hover:text-rose-600 font-medium py-1">Collections</a>
+                            <a href="#shop-products" onClick={() => setMenuOpen(false)} className="block text-slate-700 hover:text-rose-600 font-medium py-1">Jamdani Sarees</a>
+                            <a href="#shop-products" onClick={() => setMenuOpen(false)} className="block text-slate-700 hover:text-rose-600 font-medium py-1">Lehengas</a>
+                            <a href="#about" onClick={() => setMenuOpen(false)} className="block text-slate-700 hover:text-rose-600 font-medium py-1">About Us</a>
+                            <a href="#contact" onClick={() => setMenuOpen(false)} className="block text-slate-700 hover:text-rose-600 font-medium py-1">Contact</a>
+                            <div className="pt-2 border-t border-slate-100">
+                                <a
+                                    href={facebookUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center justify-center gap-2 bg-blue-600 text-white text-xs font-semibold px-4 py-2.5 rounded-full w-full"
+                                >
+                                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                    <span>Visit Facebook Page</span>
+                                </a>
+                            </div>
+                        </div>
+                    )}
+                </header>
+            ) : (
+                /* Classic / Default Header */
+                <header ref={headerRef} className={`${headerSticky ? 'sticky top-0' : 'relative'} z-40 ${isHumanbeingHeader ? 'border-b border-cyan-500/20 shadow-[0_8px_22px_rgba(6,182,212,0.18)]' : 'border-b border-slate-200 shadow-sm backdrop-blur-xl'}`} style={{ fontFamily: headerFontFamily, backgroundColor: isHumanbeingHeader ? modernHeaderBgColor : headerBgColor }}>
+                    <div className={`store-container flex items-center ${isHumanbeingHeader ? 'h-[66px] gap-3 md:h-[78px] md:gap-4 lg:gap-6' : 'h-[74px] gap-2.5 sm:gap-3 lg:gap-3.5 xl:gap-4'}`} style={{ backgroundColor: isHumanbeingHeader ? modernHeaderBgColor : headerBgColor, color: isHumanbeingHeader ? modernHeaderTextColor : headerTextColor }}>
+                        <button onClick={() => setMenuOpen(true)} className={isHumanbeingHeader ? 'grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition hover:bg-white/20 lg:hidden' : 'grid h-10 w-10 shrink-0 place-items-center rounded-full border border-slate-200 lg:hidden'} style={{ color: isHumanbeingHeader ? modernHeaderTextColor : headerTextColor }} aria-label="Open menu"><Menu className={isHumanbeingHeader ? 'h-7 w-7' : 'h-5 w-5'} /></button>
+                        <Link href={route('home')} className={isHumanbeingHeader ? 'flex min-w-0 flex-1 items-center justify-center md:justify-start md:flex-none md:min-w-[210px]' : 'flex min-w-0 flex-1 items-center justify-center md:flex-none md:shrink-0 md:justify-start'}>
+                            {logo ? (
+                                <img
+                                    src={logo}
+                                    alt={storeName}
+                                    className={isHumanbeingHeader ? 'max-h-12 w-auto max-w-[145px] object-contain sm:max-w-[170px] lg:max-w-[220px] mx-auto md:mx-0' : 'max-h-10 sm:max-h-11 md:max-h-12 w-auto max-w-[150px] sm:max-w-[175px] lg:max-w-[200px] xl:max-w-[220px] object-contain mx-auto md:mx-0'}
+                                />
+                            ) : (
+                                <span className="text-xl font-bold tracking-tight text-center md:text-left truncate" style={{ color: isHumanbeingHeader ? modernHeaderTextColor : headerTextColor }}>
+                                    {headerLogoText}
+                                </span>
                             )}
-                            <AccountMenu auth={auth} open={accountOpen} setOpen={setAccountOpen} accountRef={accountRef} primaryColor={primaryColor} />
-                        </>}
+                        </Link>
+                        {!isHumanbeingHeader && showHeaderCategoryMenu && <DesktopCategoryMenu categories={header_categories} open={categoriesOpen} setOpen={setCategoriesOpen} primaryColor={primaryColor} />}
+                        <form ref={searchRef} onSubmit={submitSearch} className={isHumanbeingHeader ? "relative hidden min-w-0 flex-[0_1_760px] md:block" : "relative hidden min-w-0 md:flex flex-1"}>
+                            <div className={isHumanbeingHeader ? 'flex h-[44px] overflow-hidden rounded-full bg-white shadow-[0_8px_18px_rgba(8,145,178,0.16)] ring-1 ring-white/25' : 'flex h-[42px] xl:h-[46px] items-center overflow-hidden rounded-full border border-slate-200 bg-white shadow-sm w-full'}>
+                                {!isHumanbeingHeader && <Search className="ml-4 h-4 w-4 text-slate-400 shrink-0" />}
+                                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={isHumanbeingHeader ? 'Search for smartwatches, cotton polos, combos...' : 'Search for products...'} className={isHumanbeingHeader ? 'min-w-0 flex-1 border-0 bg-transparent px-3.5 text-sm font-medium text-slate-700 outline-none ring-0 placeholder:text-slate-400 focus:ring-0' : 'h-full min-w-0 flex-1 border-0 bg-transparent px-3 text-xs xl:text-sm outline-none ring-0 focus:ring-0'} />
+                                <button className={isHumanbeingHeader ? 'm-1 inline-flex items-center gap-1.5 rounded-full bg-[#08bde3] px-5 text-xs font-bold text-white shadow-[0_5px_12px_rgba(8,189,227,0.28)] transition hover:bg-[#06a9cc]' : 'h-full rounded-none px-4 xl:px-6 text-xs xl:text-sm font-bold text-white shrink-0 transition hover:opacity-90'} style={!isHumanbeingHeader ? { backgroundColor: primaryColor } : undefined}>{isHumanbeingHeader && <Search className="h-3.5 w-3.5" />}Search</button>
+                            </div>
+                            <SearchSuggestions suggestions={suggestions} money={money} onSelect={() => setSuggestions([])} />
+                        </form>
+                        <div className={isHumanbeingHeader ? 'ml-auto flex shrink-0 items-center gap-2 md:gap-3' : `flex shrink-0 items-center md:ml-auto w-10 md:w-auto justify-end ${showHeaderQuotation ? 'gap-1.5 sm:gap-2' : 'gap-2 sm:gap-2.5 xl:gap-3'}`}>
+                            {isHumanbeingHeader ? <>
+                                {showHeaderTrackOrder && <Link href={route('track-order')} className="hidden h-10 items-center rounded-full border border-white/25 bg-white/10 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-white/20 xl:flex">Track Order</Link>}
+                                {showHeaderWishlist && <button onClick={() => setWishlistOpen(true)} className="relative grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/10 transition hover:bg-white/20" aria-label="Wishlist"><Heart className="h-7 w-7" strokeWidth={2.1} />{wishlistItems.length ? <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-white px-1 text-[11px] font-black text-[#08bde3]">{wishlistItems.length}</span> : null}</button>}
+                                {showHeaderCart && <button onClick={() => setCartOpen(true)} className="relative grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/10 transition hover:bg-white/20" aria-label="Cart"><ShoppingBag className="h-7 w-7" strokeWidth={2.1} /><span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-white px-1 text-[11px] font-black text-[#08bde3]">{cartCount}</span></button>}
+                                <AccountMenu auth={auth} open={accountOpen} setOpen={setAccountOpen} accountRef={accountRef} variant="humanbeing" primaryColor={primaryColor} />
+                            </> : <>
+                                {showHeaderCompare && <Link href={compareUrl()} className={`hidden h-[40px] xl:h-[42px] items-center gap-1.5 rounded-full border border-slate-200 bg-white ${showHeaderQuotation ? 'px-2.5 xl:px-3.5' : 'px-3 xl:px-4'} text-xs font-bold lg:flex shrink-0`}><GitCompare className="h-3.5 w-3.5 xl:h-4 xl:w-4" />Compare {compareItems.length ? <span className="grid h-5 min-w-5 place-items-center rounded-full bg-[#ff4b19] px-1 text-[10px] text-white">{compareItems.length}</span> : ''}</Link>}
+                                {showHeaderWishlist && <button onClick={() => setWishlistOpen(true)} className={`hidden h-[40px] xl:h-[42px] items-center gap-1.5 rounded-full border border-slate-200 bg-white ${showHeaderQuotation ? 'px-2.5 xl:px-3.5' : 'px-3 xl:px-4'} text-xs font-bold lg:flex shrink-0`}><Heart className="h-3.5 w-3.5 xl:h-4 xl:w-4" />Wishlist {wishlistItems.length ? <span className="grid h-5 min-w-5 place-items-center rounded-full bg-[#ff4b19] px-1 text-[10px] text-white">{wishlistItems.length}</span> : ''}</button>}
+                                {showHeaderCart && (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={() => setCartOpen(true)}
+                                            className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm transition active:scale-95 md:hidden"
+                                            aria-label="Cart"
+                                        >
+                                            <span className="relative grid h-6 w-6 place-items-center">
+                                                <ShoppingCart className="h-5 w-5 text-slate-700" strokeWidth={2.2} />
+                                                {Number(cartCount || 0) > 0 && (
+                                                    <span className="absolute -right-2.5 -top-1.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[#ff4b19] px-1 text-[10px] font-black leading-none text-white shadow-sm ring-2 ring-white">
+                                                        {cartCount > 99 ? '99+' : cartCount}
+                                                    </span>
+                                                )}
+                                            </span>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setCartOpen(true)}
+                                            className={`hidden md:flex h-[40px] xl:h-[42px] items-center gap-1.5 rounded-full border border-slate-200 bg-white ${showHeaderQuotation ? 'px-2.5 sm:px-3 xl:px-3.5' : 'px-3 sm:px-3.5 xl:px-4'} text-xs font-bold shrink-0`}
+                                        >
+                                            <ShoppingCart className="h-3.5 w-3.5 xl:h-4 xl:w-4" />
+                                            <span>Cart</span>
+                                            <span className="grid h-5 min-w-5 place-items-center rounded-full bg-[#ff4b19] px-1 text-[10px] text-white">{cartCount}</span>
+                                        </button>
+                                    </>
+                                )}
+                                {showHeaderQuotation && (
+                                    <Link
+                                        href={route('quotation.request')}
+                                        className="hidden h-[40px] xl:h-[42px] items-center rounded-full px-3.5 xl:px-4 text-xs font-extrabold text-white shadow-sm transition hover:opacity-90 active:scale-95 lg:flex shrink-0 whitespace-nowrap"
+                                        style={{ backgroundColor: primaryColor }}
+                                    >
+                                        Quotation Request
+                                    </Link>
+                                )}
+                                <AccountMenu auth={auth} open={accountOpen} setOpen={setAccountOpen} accountRef={accountRef} primaryColor={primaryColor} />
+                            </>}
+                        </div>
                     </div>
-                </div>
-                {showMobileHeaderSearch && !mobileSearchOpen && <div ref={mobileSearchRef} className="store-container relative mb-3 md:hidden">
-                    <form onSubmit={submitSearch} className="flex h-11 overflow-hidden rounded-full border border-slate-200 bg-white" style={{ color: headerTextColor }}><Search className="ml-4 mt-3.5 h-4 w-4 text-slate-400" /><input ref={mobileSearchInputRef} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search products..." className="min-w-0 flex-1 border-0 bg-transparent px-3 text-sm outline-none ring-0 focus:ring-0" /><button className="rounded-none px-5 text-xs font-bold text-white transition hover:opacity-90" style={{ backgroundColor: primaryColor }}>Search</button>{mobileSearchOpen && !showMobileHeaderSearch && <button type="button" onClick={() => { setMobileSearchOpen(false); setSuggestions([]); }} className="grid w-10 place-items-center bg-white text-slate-500" aria-label="Close search"><X className="h-4 w-4" /></button>}</form>
-                    <SearchSuggestions suggestions={suggestions} money={money} onSelect={() => setSuggestions([])} mobile />
-                </div>}
-                <nav className="hidden border-t border-slate-200 lg:block" style={{ backgroundColor: bottomBarBgColor, color: bottomBarTextColor, fontFamily: headerMenuFontFamily }}>
-                    <div className="store-container flex min-h-12 items-center gap-7">
-                        {navItems.map((item) => (
-                            <HeaderBottomNavItem
-                                key={item.label}
-                                item={item}
-                                textColor={bottomBarTextColor}
-                                activeColor={activeLinkColor}
-                                currentUrl={currentUrl}
-                            />
-                        ))}
-                        {showHeaderSupport && (
-                            <a
-                                href={`tel:${String(phone || '').replace(/[^0-9+]/g, '')}`}
-                                className="ml-auto inline-flex items-center gap-2.5 rounded-full px-4 py-1.5 text-xs font-bold text-white shadow-sm transition-all duration-200 hover:opacity-90 hover:shadow active:scale-95 shrink-0"
-                                style={{ backgroundColor: primaryColor }}
-                                title={`Call Customer support: ${phone}`}
-                            >
-                                <div className="grid h-6 w-6 place-items-center rounded-full bg-white/20 text-white shrink-0">
-                                    <Phone className="h-3 w-3 fill-current" />
-                                </div>
-                                <div className="text-left leading-tight">
-                                    <span className="block text-[10px] font-semibold text-white/90">Customer support</span>
-                                    {phone && <span className="block text-[11px] font-bold text-white tracking-wide">{phone}</span>}
-                                </div>
-                            </a>
-                        )}
-                    </div>
-                </nav>
-            </header>
+                    {showMobileHeaderSearch && !mobileSearchOpen && <div ref={mobileSearchRef} className="store-container relative mb-3 md:hidden">
+                        <form onSubmit={submitSearch} className="flex h-11 overflow-hidden rounded-full border border-slate-200 bg-white" style={{ color: headerTextColor }}><Search className="ml-4 mt-3.5 h-4 w-4 text-slate-400" /><input ref={mobileSearchInputRef} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search products..." className="min-w-0 flex-1 border-0 bg-transparent px-3 text-sm outline-none ring-0 focus:ring-0" /><button className="rounded-none px-5 text-xs font-bold text-white transition hover:opacity-90" style={{ backgroundColor: primaryColor }}>Search</button>{mobileSearchOpen && !showMobileHeaderSearch && <button type="button" onClick={() => { setMobileSearchOpen(false); setSuggestions([]); }} className="grid w-10 place-items-center bg-white text-slate-500" aria-label="Close search"><X className="h-4 w-4" /></button>}</form>
+                        <SearchSuggestions suggestions={suggestions} money={money} onSelect={() => setSuggestions([])} mobile />
+                    </div>}
+                    <nav className="hidden border-t border-slate-200 lg:block" style={{ backgroundColor: bottomBarBgColor, color: bottomBarTextColor, fontFamily: headerMenuFontFamily }}>
+                        <div className="store-container flex min-h-12 items-center gap-7">
+                            {navItems.map((item) => (
+                                <HeaderBottomNavItem
+                                    key={item.label}
+                                    item={item}
+                                    textColor={bottomBarTextColor}
+                                    activeColor={activeLinkColor}
+                                    currentUrl={currentUrl}
+                                />
+                            ))}
+                            {showHeaderSupport && (
+                                <a
+                                    href={`tel:${String(phone || '').replace(/[^0-9+]/g, '')}`}
+                                    className="ml-auto inline-flex items-center gap-2.5 rounded-full px-4 py-1.5 text-xs font-bold text-white shadow-sm transition-all duration-200 hover:opacity-90 hover:shadow active:scale-95 shrink-0"
+                                    style={{ backgroundColor: primaryColor }}
+                                    title={`Call Customer support: ${phone}`}
+                                >
+                                    <div className="grid h-6 w-6 place-items-center rounded-full bg-white/20 text-white shrink-0">
+                                        <Phone className="h-3 w-3 fill-current" />
+                                    </div>
+                                    <div className="text-left leading-tight">
+                                        <span className="block text-[10px] font-semibold text-white/90">Customer support</span>
+                                        {phone && <span className="block text-[11px] font-bold text-white tracking-wide">{phone}</span>}
+                                    </div>
+                                </a>
+                            )}
+                        </div>
+                    </nav>
+                </header>
+            )}
 
             <main>{children}</main>
 
-            <footer id="footer" style={{ backgroundColor: footerBgColor, color: footerTextColor }}>
-                <div id="contact" className="store-container grid items-start gap-8 py-10 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1.25fr] lg:gap-12">
-                    <div>
-                        <h3 className="text-lg font-bold">Registered Office</h3>
-                        {footerAbout && <p className="mt-4 text-sm leading-6 opacity-80">{footerAbout}</p>}
-                        <div className="mt-5 space-y-3 text-sm leading-relaxed opacity-85">
-                            <p className="flex gap-3"><MapPin className="mt-1 h-4 w-4 shrink-0" style={{ color: activeLinkColor }} />{address}</p>
-                            <p className="flex gap-3"><Mail className="h-4 w-4 shrink-0" style={{ color: activeLinkColor }} />{email}</p>
-                            <p className="flex gap-3"><Phone className="h-4 w-4 shrink-0" style={{ color: activeLinkColor }} />{phone}</p>
-                            {footerDbid && <p className="rounded-xl border border-white/10 px-3 py-2 text-xs font-semibold opacity-90">{footerDbid}</p>}
-                        </div>
-                    </div>
-                    <div>
-                        <h3 className="text-lg font-bold">Store Sitemap</h3>
-                        <div className="mt-5 grid max-w-[260px] gap-3 text-sm opacity-85">
-                            {footer_pages.length ? footer_pages.map((page) => <Link key={page.id} href={route('page.show', { slug: page.slug })}>{page.title}</Link>) : <span className="opacity-70">No pages available</span>}
-                        </div>
-                    </div>
-                    <div>
-                        <h3 className="text-lg font-bold">Categories</h3>
-                        <div className="mt-5 grid max-w-[260px] gap-3 text-sm opacity-85">{categories.slice(0, 8).map((category) => <Link key={category.id} href={category.slug ? route('category.show', { slug: category.slug }) : '#'} className="leading-snug transition hover:translate-x-1">{category.name}</Link>)}</div>
-                    </div>
-                    <div>
-                        <h3 className="text-lg font-bold">Customer Care</h3>
-                        <div className="mt-5 max-w-[300px] space-y-3 text-sm opacity-85">
-                            <p>Hotline: {phone}</p>
-                            <p>Sales: {email}</p>
-                            <Link href={route('track-order')} className="block">Track your order</Link>
-                            <button onClick={() => setWishlistOpen(true)}>My Wishlist</button>
-                        </div>
-                        {footerPayments.length > 0 && (
-                            <div className="mt-6">
-                                <h4 className="text-xs font-black uppercase tracking-[0.2em] opacity-70">Accepted Payments</h4>
-                                <div className="mt-3 flex flex-wrap gap-2">
-                                    {footerPayments.map((payment) => <span key={payment} className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wide">{payment}</span>)}
+            {isRoseFashionHeader ? (
+                /* Rose Fashion Specific Footer */
+                <footer id="contact" className="bg-slate-950 text-slate-300 pt-16 pb-12 border-t border-slate-800">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-slate-800">
+                            {/* Col 1: Brand Info */}
+                            <div className="space-y-4">
+                                    <img
+                                        src={logo}
+                                        alt={storeName}
+                                        onError={(e) => {
+                                            if (!e.currentTarget.src.endsWith('/logo.png')) {
+                                                e.currentTarget.src = '/logo.png';
+                                            }
+                                        }}
+                                        className="w-14 h-14 rounded-full object-cover shadow-md"
+                                    />
+                                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                                    Your premium boutique for Jamdani sarees, bridal lehengas, and designer drapes. Located in the heart of Dhaka New Market.
+                                </p>
+                                <div className="pt-2">
+                                    <a
+                                        href={facebookUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-full transition shadow"
+                                    >
+                                        <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                        <span>Follow Facebook Page</span>
+                                    </a>
                                 </div>
                             </div>
-                        )}
-                        {footerSocialLinks.length > 0 && (
-                            <div className="mt-6">
-                                <h4 className="text-xs font-black uppercase tracking-[0.2em] opacity-70">Follow Us</h4>
-                                <div className="mt-3 flex flex-wrap gap-2">
-                                    {footerSocialLinks.map((social) => <a key={social.label} href={social.href} target="_blank" rel="noreferrer" className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-bold transition hover:bg-white/20">{social.label}</a>)}
-                                </div>
+
+                            {/* Col 2: Quick Links */}
+                            <div>
+                                <h4 className="font-serif text-white font-bold text-base mb-4">Quick Links</h4>
+                                <ul className="space-y-2 text-sm text-slate-400">
+                                    <li><Link href={route('home')} className="hover:text-rose-500 transition">Home</Link></li>
+                                    <li><a href="#collections" className="hover:text-rose-500 transition">Collections</a></li>
+                                    <li><a href="#shop-products" className="hover:text-rose-500 transition">Jamdani Sarees</a></li>
+                                    <li><a href="#shop-products" className="hover:text-rose-500 transition">Bridal Lehengas</a></li>
+                                    <li><a href="#about" className="hover:text-rose-500 transition">About Us</a></li>
+                                </ul>
                             </div>
-                        )}
+
+                            {/* Col 3: Categories / Specialities */}
+                            <div>
+                                <h4 className="font-serif text-white font-bold text-base mb-4">Our Specialities</h4>
+                                <ul className="space-y-2 text-sm text-slate-400">
+                                    <li><a href="#shop-products" className="hover:text-rose-500 transition">Handloom Jamdani</a></li>
+                                    <li><a href="#shop-products" className="hover:text-rose-500 transition">Party Lehengas</a></li>
+                                    <li><a href="#shop-products" className="hover:text-rose-500 transition">Katan & Silk Sarees</a></li>
+                                </ul>
+                            </div>
+
+                            {/* Col 4: Contact & Location */}
+                            <div className="space-y-3">
+                                <h4 className="font-serif text-white font-bold text-base mb-4">Store Location</h4>
+                                <p className="text-xs sm:text-sm text-slate-400 flex items-start gap-2">
+                                    <MapPin className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
+                                    <span>{address || "Shop #214 (New Market Area), Dhaka New Market, Dhaka-1205, Bangladesh"}</span>
+                                </p>
+                                <p className="text-xs sm:text-sm text-slate-400 flex items-center gap-2">
+                                    <Phone className="w-4 h-4 text-rose-500 shrink-0" />
+                                    <span>{phone || "+880 1700-000000"}</span>
+                                </p>
+                                <p className="text-xs sm:text-sm text-slate-400 flex items-center gap-2">
+                                    <Mail className="w-4 h-4 text-rose-500 shrink-0" />
+                                    <span>{email || "support@rosefashionbd.com"}</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Copyright */}
+                        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500">
+                            <p>&copy; 2026 Rose Fashion. All rights reserved. Dhaka New Market.</p>
+                            <div className="flex space-x-6 mt-4 sm:mt-0">
+                                <a href="#" className="hover:text-rose-400 transition">Privacy Policy</a>
+                                <a href="#" className="hover:text-rose-400 transition">Terms of Service</a>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div className="border-t border-white/10">
-                    <div className="store-container flex flex-col justify-between items-center gap-3 py-5 text-xs text-white/70 sm:flex-row">
-                        <p>{footerCopyright}</p>
-                        <a
-                            href="https://zorvyn-meet.netlify.app/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="group relative inline-flex items-center gap-2 rounded-full border border-white/15 bg-gradient-to-r from-white/[0.08] to-white/[0.02] px-3.5 py-1.5 text-xs shadow-inner shadow-white/5 backdrop-blur-md transition-all duration-300 hover:border-cyan-400/50 hover:bg-white/[0.12] hover:shadow-lg hover:shadow-cyan-500/10 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#102f58]"
-                            title="Visit Zorvyn"
-                        >
-                            <span className="relative flex h-2 w-2">
-                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75"></span>
-                                <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-400"></span>
-                            </span>
-                            <span className="text-white/75 transition-colors group-hover:text-white">Made by</span>
-                            <span className="bg-gradient-to-r from-cyan-300 via-sky-200 to-indigo-300 bg-clip-text font-black tracking-wider text-transparent uppercase drop-shadow-xs transition-all group-hover:from-cyan-200 group-hover:via-white group-hover:to-cyan-300">
-                                zorvyn
-                            </span>
-                            <ArrowUpRight className="h-3.5 w-3.5 text-cyan-400/80 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-cyan-300" />
-                        </a>
+                </footer>
+            ) : (
+                /* Classic / Default Footer */
+                <footer id="footer" style={{ backgroundColor: footerBgColor, color: footerTextColor }}>
+                    <div id="contact" className="store-container grid items-start gap-8 py-10 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1.25fr] lg:gap-12">
+                        <div>
+                            <h3 className="text-lg font-bold">Registered Office</h3>
+                            {footerAbout && <p className="mt-4 text-sm leading-6 opacity-80">{footerAbout}</p>}
+                            <div className="mt-5 space-y-3 text-sm leading-relaxed opacity-85">
+                                <p className="flex gap-3"><MapPin className="mt-1 h-4 w-4 shrink-0" style={{ color: activeLinkColor }} />{address}</p>
+                                <p className="flex gap-3"><Mail className="h-4 w-4 shrink-0" style={{ color: activeLinkColor }} />{email}</p>
+                                <p className="flex gap-3"><Phone className="h-4 w-4 shrink-0" style={{ color: activeLinkColor }} />{phone}</p>
+                                {footerDbid && <p className="rounded-xl border border-white/10 px-3 py-2 text-xs font-semibold opacity-90">{footerDbid}</p>}
+                            </div>
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold">Store Sitemap</h3>
+                            <div className="mt-5 grid max-w-[260px] gap-3 text-sm opacity-85">
+                                {footer_pages.length ? footer_pages.map((page) => <Link key={page.id} href={route('page.show', { slug: page.slug })}>{page.title}</Link>) : <span className="opacity-70">No pages available</span>}
+                            </div>
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold">Categories</h3>
+                            <div className="mt-5 grid max-w-[260px] gap-3 text-sm opacity-85">{categories.slice(0, 8).map((category) => <Link key={category.id} href={category.slug ? route('category.show', { slug: category.slug }) : '#'} className="leading-snug transition hover:translate-x-1">{category.name}</Link>)}</div>
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold">Customer Care</h3>
+                            <div className="mt-5 max-w-[300px] space-y-3 text-sm opacity-85">
+                                <p>Hotline: {phone}</p>
+                                <p>Sales: {email}</p>
+                                <Link href={route('track-order')} className="block">Track your order</Link>
+                                <button onClick={() => setWishlistOpen(true)}>My Wishlist</button>
+                            </div>
+                            {footerPayments.length > 0 && (
+                                <div className="mt-6">
+                                    <h4 className="text-xs font-black uppercase tracking-[0.2em] opacity-70">Accepted Payments</h4>
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        {footerPayments.map((payment) => <span key={payment} className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wide">{payment}</span>)}
+                                    </div>
+                                </div>
+                            )}
+                            {footerSocialLinks.length > 0 && (
+                                <div className="mt-6">
+                                    <h4 className="text-xs font-black uppercase tracking-[0.2em] opacity-70">Follow Us</h4>
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        {footerSocialLinks.map((social) => <a key={social.label} href={social.href} target="_blank" rel="noreferrer" className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-bold transition hover:bg-white/20">{social.label}</a>)}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </div>
-            </footer>
+                    <div className="border-t border-white/10">
+                        <div className="store-container flex flex-col justify-between items-center gap-3 py-5 text-xs text-white/70 sm:flex-row">
+                            <p>{footerCopyright}</p>
+                            <a
+                                href="https://zorvyn-meet.netlify.app/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="group relative inline-flex items-center gap-2 rounded-full border border-white/15 bg-gradient-to-r from-white/[0.08] to-white/[0.02] px-3.5 py-1.5 text-xs shadow-inner shadow-white/5 backdrop-blur-md transition-all duration-300 hover:border-cyan-400/50 hover:bg-white/[0.12] hover:shadow-lg hover:shadow-cyan-500/10 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#102f58]"
+                                title="Visit Zorvyn"
+                            >
+                                <span className="relative flex h-2 w-2">
+                                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75"></span>
+                                    <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-400"></span>
+                                </span>
+                                <span className="text-white/75 transition-colors group-hover:text-white">Made by</span>
+                                <span className="bg-gradient-to-r from-cyan-300 via-sky-200 to-indigo-300 bg-clip-text font-black tracking-wider text-transparent uppercase drop-shadow-xs transition-all group-hover:from-cyan-200 group-hover:via-white group-hover:to-cyan-300">
+                                    zorvyn
+                                </span>
+                                <ArrowUpRight className="h-3.5 w-3.5 text-cyan-400/80 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-cyan-300" />
+                            </a>
+                        </div>
+                    </div>
+                </footer>
+            )}
 
 
             {mobileSearchOpen && (
