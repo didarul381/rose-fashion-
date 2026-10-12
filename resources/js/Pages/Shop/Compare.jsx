@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { ArrowRight, GitCompare, Star, Trash2, X } from 'lucide-react';
 import ShopLayout from '../../Layouts/ShopLayout';
@@ -47,10 +47,6 @@ function defaultSpecs(product) {
         ['Availability', Number(product.stock || 0) > 0 || product.type === 'digital' ? 'In stock' : 'Out of stock'],
         ['Stock', product.type === 'digital' ? 'Digital product' : `${Number(product.stock || 0)} units`],
         ['Weight', product.weight ? `${product.weight} ${product.weight_unit?.code || product.weightUnit?.code || ''}`.trim() : 'N/A'],
-        ['Return', [settings.product_info_return_label, settings.product_info_return_value].filter(Boolean).join(': ')],
-        ['Exchange', [settings.product_info_exchange_label, settings.product_info_exchange_value].filter(Boolean).join(': ')],
-        ['Delivery', [settings.product_info_delivery_label, settings.product_info_delivery_value].filter(Boolean).join(': ')],
-        ['Payment', [settings.product_info_payment_label, settings.product_info_payment_value].filter(Boolean).join(': ')],
     ].filter(([, value]) => value && value !== ': ');
 
     return [...rows, ...variantSpecs(product), ...parseCustomSpecs(product)];

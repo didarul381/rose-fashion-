@@ -1,5 +1,5 @@
 import { useStoreName } from '../../Hooks/useStoreName';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, useForm, router } from '@inertiajs/react';
 import AdminLayout from '../../Layouts/AdminLayout';
 import { 
@@ -30,10 +30,20 @@ export default function AdminSettings({ settings }) {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
             const tabParam = params.get('tab');
-            if (tabParam) return tabParam;
+            if (tabParam && tabParam !== 'header' && tabParam !== 'theme') return tabParam;
         }
         return 'general';
     });
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const tabParam = params.get('tab');
+            if (tabParam === 'header' || tabParam === 'theme') {
+                router.visit(route('admin.theme-customize'));
+            }
+        }
+    }, []);
     const [uploadingLogo, setUploadingLogo] = useState(false);
     const [uploadingPopup, setUploadingPopup] = useState(false);
 
@@ -98,8 +108,7 @@ export default function AdminSettings({ settings }) {
         { id: 'chat_plugin', name: '💬 Multiple Chat Plugin' },
         { id: 'checkout', name: 'Checkout Page' },
         { id: 'mail', name: 'Mail Settings' },
-        { id: 'theme', name: '🎨 Theme Customize' },
-        { id: 'header', name: '🖥️ Header Builder' },
+        { id: 'theme', name: '🎨 Theme Customize', href: route('admin.theme-customize') },
         { id: 'footer', name: '👣 Footer Builder' },
         { id: 'megamenu', name: '🧭 Mega Menu' },
         { id: 'popup', name: '🎁 Popup Builder' },
@@ -123,15 +132,15 @@ export default function AdminSettings({ settings }) {
 
     return (
         <AdminLayout>
-            <Head title={`Theme & Brand Customizer | ${storeName} Admin`} />
+            <Head title={`Store Settings | ${storeName} Admin`} />
 
             <div className="flex flex-col gap-6">
                 
                 {/* Heading */}
                 <div className="flex justify-between items-center">
                     <div>
-                        <h1 className="text-xl font-bold text-slate-800">Theme & Brand Customizer</h1>
-                        <p className="text-xs text-slate-400 mt-1">Configure layout builders, logo settings, custom font family, color palettes, and popups.</p>
+                        <h1 className="text-xl font-bold text-slate-800">Store Settings</h1>
+                        <p className="text-xs text-slate-400 mt-1">Configure general store settings, chat plugins, checkout fields, and notifications.</p>
                     </div>
                 </div>
 
@@ -680,208 +689,6 @@ export default function AdminSettings({ settings }) {
                                 </div>
                             )}
 
-                            {/* TAB 2: Theme Customize */}
-                            {activeTab === 'theme' && (
-                                <div className="bg-white border border-slate-100 p-6 md:p-8 rounded-2xl shadow-sm flex flex-col gap-6 animate-fadeIn">
-                                    <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider pb-2 border-b border-slate-100">
-                                        Style Settings & Typography Customizer
-                                    </h2>
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
-                                        <div>
-                                            <label className="font-bold text-slate-600 uppercase">Primary Theme Color</label>
-                                            <div className="flex gap-2 mt-1">
-                                                <input
-                                                    type="color"
-                                                    value={form.data.settings.primary_color || '#c2005f'}
-                                                    onChange={e => handleFieldChange('primary_color', e.target.value)}
-                                                    className="w-10 h-10 p-0 border-0 rounded-lg cursor-pointer"
-                                                />
-                                                <input
-                                                    type="text"
-                                                    value={form.data.settings.primary_color || '#c2005f'}
-                                                    onChange={e => handleFieldChange('primary_color', e.target.value)}
-                                                    className="flex-1 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none font-mono"
-                                                    placeholder="#hexcolor"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="font-bold text-slate-600 uppercase">Secondary Theme Color</label>
-                                            <div className="flex gap-2 mt-1">
-                                                <input
-                                                    type="color"
-                                                    value={form.data.settings.secondary_color || '#1e293b'}
-                                                    onChange={e => handleFieldChange('secondary_color', e.target.value)}
-                                                    className="w-10 h-10 p-0 border-0 rounded-lg cursor-pointer"
-                                                />
-                                                <input
-                                                    type="text"
-                                                    value={form.data.settings.secondary_color || '#1e293b'}
-                                                    onChange={e => handleFieldChange('secondary_color', e.target.value)}
-                                                    className="flex-1 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none font-mono"
-                                                    placeholder="#hexcolor"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="font-bold text-slate-600 uppercase">Main Brand Font Family</label>
-                                            <select
-                                                value={form.data.settings.font_family || 'Outfit'}
-                                                onChange={e => handleFieldChange('font_family', e.target.value)}
-                                                className="w-full mt-1 px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none bg-white font-medium"
-                                            >
-                                                <option value="Outfit">Outfit (Fashion & Modern)</option>
-                                                <option value="Inter">Inter (Clean & Professional)</option>
-                                                <option value="Roboto">Roboto (Minimalist & Flat)</option>
-                                                <option value="Montserrat">Montserrat (Bold & Elegant)</option>
-                                                <option value="Playfair Display">Playfair Display (Premium Serif style)</option>
-                                            </select>
-                                        </div>
-
-                                        <div>
-                                            <label className="font-bold text-slate-600 uppercase">Global Card Corner Radius</label>
-                                            <select
-                                                value={form.data.settings.border_radius || 'rounded-2xl'}
-                                                onChange={e => handleFieldChange('border_radius', e.target.value)}
-                                                className="w-full mt-1 px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none bg-white font-medium"
-                                            >
-                                                <option value="rounded-none">Square Corners (rounded-none)</option>
-                                                <option value="rounded-lg">Small Rounded (rounded-lg - 8px)</option>
-                                                <option value="rounded-xl">Medium Rounded (rounded-xl - 12px)</option>
-                                                <option value="rounded-2xl">Large Rounded (rounded-2xl - 16px)</option>
-                                                <option value="rounded-3xl">Extra Large Rounded (rounded-3xl - 24px)</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* TAB 3: Header Builder */}
-                            {activeTab === 'header' && (
-                                <div className="bg-white border border-slate-100 p-6 md:p-8 rounded-2xl shadow-sm flex flex-col gap-6 animate-fadeIn">
-                                    <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider pb-2 border-b border-slate-100">
-                                        Header Builder Configurations
-                                    </h2>
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
-                                        <div>
-                                            <label className="font-bold text-slate-600 uppercase">Header Sticky Status</label>
-                                            <select
-                                                value={form.data.settings.header_sticky || 'true'}
-                                                onChange={e => handleFieldChange('header_sticky', e.target.value)}
-                                                className="w-full mt-1 px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none bg-white font-medium"
-                                            >
-                                                <option value="true">Fixed Sticky Header (Scroll Follows)</option>
-                                                <option value="false">Static Header (Stays on Top)</option>
-                                            </select>
-                                        </div>
-
-                                        <div>
-                                            <label className="font-bold text-slate-600 uppercase">Header Logo Text</label>
-                                            <input
-                                                type="text"
-                                                value={form.data.settings.header_logo_text || 'Online Store'}
-                                                onChange={e => handleFieldChange('header_logo_text', e.target.value)}
-                                                className="w-full mt-1 px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none"
-                                            />
-                                        </div>
-
-                                        <div className="sm:col-span-2">
-                                            <label className="font-bold text-slate-600 uppercase">Header Custom Logo Image</label>
-                                            <div className="flex gap-4 mt-2 items-center">
-                                                <input
-                                                    type="text"
-                                                    value={form.data.settings.header_logo_image || ''}
-                                                    onChange={e => handleFieldChange('header_logo_image', e.target.value)}
-                                                    placeholder="Logo URL path"
-                                                    className="flex-1 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none font-mono"
-                                                />
-                                                <label className="cursor-pointer px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold flex items-center gap-1.5 transition-all text-[11px] h-10 select-none">
-                                                    {uploadingLogo ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                                                    Upload Image
-                                                    <input 
-                                                        type="file" 
-                                                        onChange={handleLogoUpload} 
-                                                        accept="image/*" 
-                                                        className="hidden" 
-                                                        disabled={uploadingLogo} 
-                                                    />
-                                                </label>
-                                            </div>
-                                            {form.data.settings.header_logo_image && (
-                                                <div className="mt-2.5 p-2 border border-slate-100 rounded-xl bg-slate-50 max-w-xs">
-                                                    <img src={form.data.settings.header_logo_image} alt="Logo preview" className="h-8 object-contain" />
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Announcement Bar Customizer */}
-                                    <div className="border-t border-slate-100 pt-6">
-                                        <h3 className="text-xs font-bold text-slate-850 uppercase tracking-wider mb-4">Announcement Banner Settings</h3>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                                            <div>
-                                                <label className="font-bold text-slate-600 uppercase">Announcement active</label>
-                                                <select
-                                                    value={form.data.settings.header_announcement_active || 'true'}
-                                                    onChange={e => handleFieldChange('header_announcement_active', e.target.value)}
-                                                    className="w-full mt-1 px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none bg-white font-medium"
-                                                >
-                                                    <option value="true">Enable Top Announcement Bar</option>
-                                                    <option value="false">Hide Announcement Bar</option>
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="font-bold text-slate-600 uppercase">Announcement Text</label>
-                                                <input
-                                                    type="text"
-                                                    value={form.data.settings.header_announcement_text || ''}
-                                                    onChange={e => handleFieldChange('header_announcement_text', e.target.value)}
-                                                    placeholder="🔥 Grand Launching Sale! Get 15% OFF with coupon LAUNCH15 | COD Available Nationwide"
-                                                    className="w-full mt-1 px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="font-bold text-slate-600 uppercase">Bar Background Color</label>
-                                                <div className="flex gap-2 mt-1">
-                                                    <input
-                                                        type="color"
-                                                        value={form.data.settings.header_announcement_bg || '#0f172a'}
-                                                        onChange={e => handleFieldChange('header_announcement_bg', e.target.value)}
-                                                        className="w-10 h-10 p-0 border-0 rounded-lg cursor-pointer"
-                                                    />
-                                                    <input
-                                                        type="text"
-                                                        value={form.data.settings.header_announcement_bg || '#0f172a'}
-                                                        onChange={e => handleFieldChange('header_announcement_bg', e.target.value)}
-                                                        className="flex-1 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none font-mono"
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <label className="font-bold text-slate-600 uppercase">Bar Text Color</label>
-                                                <div className="flex gap-2 mt-1">
-                                                    <input
-                                                        type="color"
-                                                        value={form.data.settings.header_announcement_color || '#ffffff'}
-                                                        onChange={e => handleFieldChange('header_announcement_color', e.target.value)}
-                                                        className="w-10 h-10 p-0 border-0 rounded-lg cursor-pointer"
-                                                    />
-                                                    <input
-                                                        type="text"
-                                                        value={form.data.settings.header_announcement_color || '#ffffff'}
-                                                        onChange={e => handleFieldChange('header_announcement_color', e.target.value)}
-                                                        className="flex-1 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none font-mono"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
 
                             {/* TAB 4: Footer Builder */}
                             {activeTab === 'footer' && (

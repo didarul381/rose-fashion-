@@ -4,7 +4,7 @@ import ShopLayout from '../../Layouts/ShopLayout';
 import { useCart } from '../../Contexts/CartContext';
 import { getWishlistItems, toggleWishlistProduct } from '../../Services/Wishlist';
 import { 
-    Star, ShoppingCart, Shield, Truck, RefreshCw, GitCompare, Phone,
+    Star, ShoppingCart, GitCompare, Phone,
     ChevronRight, Share2, Heart, FileText, ArrowRight, X, AlertCircle, PlayCircle
 } from 'lucide-react';
 import WhatsAppIcon from '../../Components/WhatsAppIcon';
@@ -141,32 +141,8 @@ export default function ProductDetail({ product, related, seo, eventId, breadcru
     }, [product.id]);
 
     const productSettings = product.settings || {};
-    const infoSettings = {
-        product_info_status: productSettings.product_info_status ?? 'enabled',
-        product_info_design: productSettings.product_info_design ?? 'default',
-        product_info_return_label: productSettings.product_info_return_label || '',
-        product_info_return_value: productSettings.product_info_return_value || '',
-        product_info_exchange_label: productSettings.product_info_exchange_label || '',
-        product_info_exchange_value: productSettings.product_info_exchange_value || '',
-        product_info_delivery_label: productSettings.product_info_delivery_label || '',
-        product_info_delivery_value: productSettings.product_info_delivery_value || '',
-        product_info_payment_label: productSettings.product_info_payment_label || '',
-        product_info_payment_value: productSettings.product_info_payment_value || '',
-    };
-
     const compareEnabled = String(productSettings.comparison_status || 'enabled') !== 'disabled';
     const showQuotationSection = String(productSettings.is_quotation_product || 'false') === 'true';
-
-    const hasPolicyInfo = [
-        infoSettings.product_info_return_label,
-        infoSettings.product_info_return_value,
-        infoSettings.product_info_exchange_label,
-        infoSettings.product_info_exchange_value,
-        infoSettings.product_info_delivery_label,
-        infoSettings.product_info_delivery_value,
-        infoSettings.product_info_payment_label,
-        infoSettings.product_info_payment_value,
-    ].some(value => value && value.toString().trim().length > 0);
 
     const matchesVariantOptions = (variant, options = {}) => {
         const valuesArr = variant.attribute_values || variant.attributeValues || [];
@@ -182,13 +158,42 @@ export default function ProductDetail({ product, related, seo, eventId, breadcru
     };
 
     const isOptionOutOfStock = (attrName, val) => {
-        if (product.type !== 'variable' || !product.variants) return false;
+        if (!product.type || product.type !== 'variable' || !product.variants) return false;
         
         const testOptions = { ...selectedOptions, [attrName]: val };
 
         const matched = product.variants.find(variant => matchesVariantOptions(variant, testOptions));
         
         return matched ? matched.stock <= 0 : true;
+    };
+
+    const getOptionImage = (attrName, val) => {
+        if (!product.variants || !Array.isArray(product.variants)) return null;
+        const targetVal = String(val).trim().toLowerCase();
+        const targetAttr = String(attrName).trim().toLowerCase();
+
+        const matched = product.variants.find(variant => {
+            if (!variant.image_path) return false;
+
+            const valuesArr = variant.attribute_values || variant.attributeValues || [];
+            const matchInArr = valuesArr.some(av => {
+                const name = av.attribute?.name || av.attribute?.code;
+                return name && String(name).trim().toLowerCase() === targetAttr && String(av.value).trim().toLowerCase() === targetVal;
+            });
+            if (matchInArr) return true;
+
+            if (variant.attributes && typeof variant.attributes === 'object') {
+                for (const [k, v] of Object.entries(variant.attributes)) {
+                    if (String(k).trim().toLowerCase() === targetAttr && String(v).trim().toLowerCase() === targetVal) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        });
+
+        return matched?.image_path || null;
     };
 
     useEffect(() => {
@@ -416,41 +421,6 @@ export default function ProductDetail({ product, related, seo, eventId, breadcru
     const thumbLayoutSetting = global_settings.product_detail_thumb_layout || 'responsive';
     const forceHorizontalThumbs = thumbLayoutSetting === 'horizontal';
     const forceVerticalThumbs = thumbLayoutSetting === 'vertical';
-    const productInfoRows = [
-        {
-            key: 'return',
-            icon: RefreshCw,
-            label: infoSettings.product_info_return_label,
-            value: infoSettings.product_info_return_value,
-            note: 'Product return policy',
-        },
-        {
-            key: 'exchange',
-            icon: RefreshCw,
-            label: infoSettings.product_info_exchange_label,
-            value: infoSettings.product_info_exchange_value,
-            note: 'Product exchange policy',
-        },
-        {
-            key: 'delivery',
-            icon: Truck,
-            label: infoSettings.product_info_delivery_label,
-            value: infoSettings.product_info_delivery_value,
-            note: 'Delivery timeline and handling',
-        },
-        {
-            key: 'payment',
-            icon: Shield,
-            label: infoSettings.product_info_payment_label,
-            value: infoSettings.product_info_payment_value,
-            note: 'Accepted payment option',
-        },
-    ].filter(row => row.label && row.value);
-    const productInfoBoxClass = infoSettings.product_info_design === 'outline'
-        ? 'border-slate-300 bg-white'
-        : infoSettings.product_info_design === 'light'
-            ? 'border-slate-100 bg-slate-50/80'
-            : 'border-slate-200 bg-white';
 
 
     const resolvedBreadcrumbs = breadcrumbs && breadcrumbs.length > 0
@@ -643,6 +613,11 @@ export default function ProductDetail({ product, related, seo, eventId, breadcru
                                 <div className="flex items-baseline gap-2 sm:gap-2.5">
                                     {displayOriginalWithUnit && <span className="text-xs sm:text-sm font-medium text-slate-400 line-through">{displayOriginalWithUnit}</span>}
                                     <span className="text-xl sm:text-2xl md:text-[26px] font-bold tracking-tight leading-none" style={{ color: themePriceColor }}>{displayPriceWithUnit}</span>
+                                    {discountPercent > 0 && (
+                                        <span className="rounded-full bg-rose-600 px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">
+                                            -{discountPercent}%
+                                        </span>
+                                    )}
                                 </div>
                             </div>
 
@@ -681,15 +656,37 @@ export default function ProductDetail({ product, related, seo, eventId, breadcru
                                         {attr.values.map((val) => {
                                             const isSelected = selectedOptions[attr.name] === val;
                                             const isOut = isOptionOutOfStock(attr.name, val);
+                                            const optionImg = getOptionImage(attr.name, val);
                                             return (
                                                 <button
                                                     key={val}
                                                     type="button"
-                                                    onClick={() => setSelectedOptions(prev => ({ ...prev, [attr.name]: val }))}
+                                                    onClick={() => {
+                                                        setSelectedOptions(prev => ({ ...prev, [attr.name]: val }));
+                                                        if (optionImg) {
+                                                            setActiveImage(optionImg);
+                                                        }
+                                                    }}
                                                     disabled={isOut}
-                                                    className={`flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-xs font-semibold transition-all ${isSelected ? 'border-[#f04a23] bg-orange-50 text-[#f04a23]' : isOut ? 'cursor-not-allowed border-slate-100 bg-slate-50 text-slate-300' : 'border-slate-200 bg-white text-slate-700 hover:border-[#f04a23]/50'}`}
+                                                    className={`flex items-center justify-center gap-2 rounded-xl border text-xs font-semibold transition-all ${
+                                                        optionImg ? 'p-1.5 pr-3' : 'h-10 min-w-10 px-3.5'
+                                                    } ${
+                                                        isSelected
+                                                            ? 'border-[#f04a23] bg-orange-50 text-[#f04a23] shadow-xs ring-1 ring-[#f04a23]'
+                                                            : isOut
+                                                                ? 'cursor-not-allowed border-slate-100 bg-slate-50 text-slate-300 opacity-60'
+                                                                : 'border-slate-200 bg-white text-slate-700 hover:border-[#f04a23]/50 hover:bg-slate-50/50'
+                                                    }`}
                                                 >
-                                                    {val}
+                                                    {optionImg && (
+                                                        <img
+                                                            src={optionImg}
+                                                            alt={val}
+                                                            className="h-8 w-8 rounded-lg object-cover border border-slate-100 shrink-0"
+                                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                        />
+                                                    )}
+                                                    <span>{val}</span>
                                                 </button>
                                             );
                                         })}
@@ -758,26 +755,6 @@ export default function ProductDetail({ product, related, seo, eventId, breadcru
                                             <span className="text-xs font-bold">in</span>
                                         </div>
                                     )}
-                                </div>
-                            )}
-
-                            {infoSettings.product_info_status !== 'disabled' && productInfoRows.length > 0 && (
-                                <div className={'mt-3 overflow-hidden rounded-xl border text-sm ' + productInfoBoxClass}>
-                                    {productInfoRows.map((row, index) => {
-                                        const Icon = row.icon;
-                                        return (
-                                            <div key={row.key} className={'flex items-center justify-between gap-4 px-4 py-3 ' + (index < productInfoRows.length - 1 ? 'border-b border-slate-100' : '')}>
-                                                <div className="flex items-start gap-3">
-                                                    <Icon className="mt-0.5 h-4 w-4 text-[#f04a23]" />
-                                                    <div>
-                                                        <p className="font-black text-slate-900">{row.label}</p>
-                                                        {row.note && <p className="text-xs text-slate-500">{row.note}</p>}
-                                                    </div>
-                                                </div>
-                                                <span className="text-right font-black text-slate-900">{row.value}</span>
-                                            </div>
-                                        );
-                                    })}
                                 </div>
                             )}
                         </div>
@@ -1033,21 +1010,38 @@ export default function ProductDetail({ product, related, seo, eventId, breadcru
                             Related Curations
                         </h2>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                            {related.map((prod) => (
-                                <Link 
-                                    key={prod.id} 
-                                    href={route('product.show', { slug: prod.slug })}
-                                    className="group bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
-                                >
-                                    <div className="aspect-square bg-slate-50 overflow-hidden relative">
-                                        <img src={prod.primary_image?.image_path || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300'} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" alt="" />
-                                    </div>
-                                    <div className="p-4 border-t border-slate-50">
-                                        <h4 className="text-xs font-bold text-slate-800 line-clamp-2 hover:text-[#e51b75] transition-all">{prod.name}</h4>
-                                        <span className="text-sm font-extrabold text-slate-900 mt-2 block">৳{prod.sale_price || prod.price}</span>
-                                    </div>
-                                </Link>
-                            ))}
+                            {related.map((prod) => {
+                                const prodOrigPrice = parseFloat(prod.price || 0);
+                                const prodSalePrice = prod.sale_price ? parseFloat(prod.sale_price) : null;
+                                const prodHasDiscount = prodSalePrice !== null && !isNaN(prodSalePrice) && prodOrigPrice > 0 && prodSalePrice < prodOrigPrice;
+                                const prodDiscountPercent = prodHasDiscount ? Math.round(((prodOrigPrice - prodSalePrice) / prodOrigPrice) * 100) : 0;
+
+                                return (
+                                    <Link 
+                                        key={prod.id} 
+                                        href={route('product.show', { slug: prod.slug })}
+                                        className="group bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+                                    >
+                                        <div className="aspect-square bg-slate-50 overflow-hidden relative">
+                                            <img src={prod.primary_image?.image_path || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300'} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" alt="" />
+                                            {prodHasDiscount && (
+                                                <span className="absolute top-2.5 left-2.5 z-10 bg-rose-700 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider shadow">
+                                                    {prodDiscountPercent > 0 ? `-${prodDiscountPercent}%` : 'Discount'}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="p-4 border-t border-slate-50">
+                                            <h4 className="text-xs font-bold text-slate-800 line-clamp-2 hover:text-[#e51b75] transition-all">{prod.name}</h4>
+                                            <div className="mt-2 flex items-baseline gap-2">
+                                                <span className="text-sm font-extrabold text-slate-900">৳{Number(prodHasDiscount ? prodSalePrice : (prodSalePrice || prodOrigPrice || 0)).toLocaleString()}</span>
+                                                {prodHasDiscount && (
+                                                    <span className="text-xs font-semibold text-slate-400 line-through">৳{Number(prodOrigPrice).toLocaleString()}</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </Link>
+                                );
+                            })}
                         </div>
                     </div>
                 )}

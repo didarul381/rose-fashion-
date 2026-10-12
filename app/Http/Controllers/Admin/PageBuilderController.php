@@ -96,7 +96,7 @@ class PageBuilderController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'type' => 'required|string|in:hero_slider,product_shelf,feature_badges,category_grid,signature_banners,cosmetics_banner,top_brands,campaign_grid,experience_features,content_columns,products_tabs',
+            'type' => 'required|string|in:hero_slider,product_shelf,feature_badges,category_grid,signature_banners,cosmetics_banner,top_brands,campaign_grid,experience_features,content_columns,products_tabs,customer_reviews',
         ]);
 
         $defaultSettings = [];
@@ -289,6 +289,41 @@ class PageBuilderController extends Controller
                     'border_style' => 'none',
                     'border_color' => '#e2e8f0',
                     'shadow' => 'shadow-none',
+                ];
+            case 'customer_reviews':
+                $defaultSettings = [
+                    'tag' => 'Customer Reviews & Feedback',
+                    'title' => 'Why Women Across Bangladesh Love Rose Fashion',
+                    'subtitle' => 'Authentic customer feedback and video reviews from our Dhaka New Market showroom & online orders.',
+                    'autoplay' => 'yes',
+                    'autoplay_speed' => '5000',
+                    'items' => [
+                        [
+                            'name' => 'Farzana Rahman',
+                            'tag' => 'Verified Customer, Dhaka',
+                            'rating' => '5',
+                            'review' => 'Rose Fashion in New Market is my go-to place for Jamdani sarees. Their online selection and quick Facebook messenger support made ordering from home so convenient!',
+                            'video_url' => 'https://www.facebook.com/share/18Ttrev5mS/',
+                            'avatar' => '',
+                        ],
+                        [
+                            'name' => 'Sadia Islam',
+                            'tag' => 'Dhanmondi, Dhaka',
+                            'rating' => '5',
+                            'review' => 'The bridal lehenga finishing and embroidery work exceeded all my expectations! Highly recommend visiting Shop #214 in Dhaka New Market or ordering through their FB page.',
+                            'video_url' => '',
+                            'avatar' => '',
+                        ],
+                        [
+                            'name' => 'Nusrat Jahan',
+                            'tag' => 'Chittagong',
+                            'rating' => '5',
+                            'review' => 'Ordered pure handloom Jamdani saree with nationwide delivery. Arrived within 48 hours in perfect packaging. Pure authenticity and elegant zari weave!',
+                            'video_url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                            'avatar' => '',
+                        ],
+                    ],
+                    'section_background_color' => '#090d16',
                 ];
                 break;
         }

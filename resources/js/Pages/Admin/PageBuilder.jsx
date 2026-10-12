@@ -287,6 +287,40 @@ const defaultSettingsSchema = {
         testimonial_author: 'Sadia Rahman',
         testimonial_location: 'Dhanmondi, Dhaka'
     },
+    customer_reviews: {
+        tag: 'Customer Reviews & Feedback',
+        title: 'Why Women Across Bangladesh Love Rose Fashion',
+        subtitle: 'Authentic customer feedback and video reviews from our Dhaka New Market showroom & online orders.',
+        autoplay: 'yes',
+        autoplay_speed: '5000',
+        items: [
+            {
+                name: 'Farzana Rahman',
+                tag: 'Verified Customer, Dhaka',
+                rating: '5',
+                review: 'Rose Fashion in New Market is my go-to place for Jamdani sarees. Their online selection and quick Facebook messenger support made ordering from home so convenient!',
+                video_url: 'https://www.facebook.com/share/18Ttrev5mS/',
+                avatar: ''
+            },
+            {
+                name: 'Sadia Islam',
+                tag: 'Dhanmondi, Dhaka',
+                rating: '5',
+                review: 'The bridal lehenga finishing and embroidery work exceeded all my expectations! Highly recommend visiting Shop #214 in Dhaka New Market or ordering through their FB page.',
+                video_url: '',
+                avatar: ''
+            },
+            {
+                name: 'Nusrat Jahan',
+                tag: 'Chittagong',
+                rating: '5',
+                review: 'Ordered pure handloom Jamdani saree with nationwide delivery. Arrived within 48 hours in perfect packaging. Pure authenticity and elegant zari weave!',
+                video_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                avatar: ''
+            }
+        ],
+        section_background_color: '#090d16'
+    },
     content_columns: {
         title: 'About Our Online Store', title_color: '#102f58', description: 'Introduce your store and explain why customers should shop with you.',
         items: [
@@ -410,6 +444,7 @@ export default function AdminPageBuilder({ sections, categories = [], activeBran
             if (editingSection?.type === 'top_brands') return ['title', 'brand', 'image', 'link'];
             if (editingSection?.type === 'content_columns') return ['title', 'text', 'link', 'link_text'];
             if (editingSection?.type === 'experience_features') return ['title', 'description', 'icon'];
+            if (editingSection?.type === 'customer_reviews') return ['name', 'tag', 'rating', 'review', 'video_url', 'avatar'];
             return ['title', 'text'];
         }
         return ['title', 'image', 'link'];
@@ -756,14 +791,29 @@ export default function AdminPageBuilder({ sections, categories = [], activeBran
                                                                                                     <option key={brand.id} value={brand.slug}>{brand.name}</option>
                                                                                                 ))}
                                                                                             </select>
-                                                                                        ) : (
-                                                                                            <input
-                                                                                                type="text"
+                                                                                        ) : (fieldKey === 'review' || fieldKey === 'description' || fieldKey === 'text') ? (
+                                                                                            <textarea
+                                                                                                rows={3}
                                                                                                 value={item[fieldKey] || ''}
                                                                                                 onChange={e => handleArrayItemChange(key, index, fieldKey, e.target.value)}
                                                                                                 className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-[11px] focus:outline-none focus:ring-1 focus:ring-[#c2005f] transition-all"
                                                                                                 placeholder={`Enter ${fieldKey}...`}
                                                                                             />
+                                                                                        ) : (
+                                                                                            <div className="w-full flex flex-col gap-1">
+                                                                                                <input
+                                                                                                    type="text"
+                                                                                                    value={item[fieldKey] || ''}
+                                                                                                    onChange={e => handleArrayItemChange(key, index, fieldKey, e.target.value)}
+                                                                                                    className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-[11px] focus:outline-none focus:ring-1 focus:ring-[#c2005f] transition-all"
+                                                                                                    placeholder={fieldKey === 'video_url' ? 'Facebook or YouTube video URL (e.g. https://...)' : fieldKey === 'rating' ? '5' : `Enter ${fieldKey}...`}
+                                                                                                />
+                                                                                                {fieldKey === 'video_url' && (
+                                                                                                    <span className="text-[10px] text-blue-600 font-medium">
+                                                                                                        Supports Facebook video or YouTube video link (optional).
+                                                                                                    </span>
+                                                                                                )}
+                                                                                            </div>
                                                                                         )}
                                                                                     </div>
                                                                                     {isImage && (
@@ -1011,6 +1061,7 @@ export default function AdminPageBuilder({ sections, categories = [], activeBran
                                 <option value="experience_features">Experience Features</option>
                                 <option value="content_columns">Content Columns / About</option>
                                 <option value="products_tabs">Dynamic Products Filter Tabs</option>
+                                <option value="customer_reviews">Customer Reviews & Video Slider</option>
                             </select>
                         </div>
                         <button

@@ -103,7 +103,6 @@ export default function AdminProducts({ products, categories, sizeCharts = [], a
     const [attributesSetup, setAttributesSetup] = useState([]);
     const [variantsList, setVariantsList] = useState([]);
     const [currentSizeChartName, setCurrentSizeChartName] = useState('');
-    const [isProductInfoOpen, setIsProductInfoOpen] = useState(false);
     const [isCategoriesBoxOpen, setIsCategoriesBoxOpen] = useState(true);
     const [isRelatedBoxOpen, setIsRelatedBoxOpen] = useState(true);
     const [relatedSearch, setRelatedSearch] = useState('');
@@ -208,16 +207,6 @@ export default function AdminProducts({ products, categories, sizeCharts = [], a
         additional_images: null,
         variants: '[]',
         settings: {
-            product_info_status: 'enabled',
-            product_info_design: 'default',
-            product_info_return_label: 'Return',
-            product_info_return_value: 'Instant',
-            product_info_exchange_label: 'Exchange',
-            product_info_exchange_value: 'Not Exchangeable',
-            product_info_delivery_label: 'Delivery Time',
-            product_info_delivery_value: '2 Days',
-            product_info_payment_label: 'Payment',
-            product_info_payment_value: 'COD Available',
             comparison_status: 'enabled',
             comparison_specs: '',
             is_quotation_product: 'false',
@@ -266,7 +255,6 @@ export default function AdminProducts({ products, categories, sizeCharts = [], a
         }) || [];
         setVariantsList(initialVariants);
         setCurrentSizeChartName(product.size_chart?.name || product.sizeChart?.name || '');
-        setIsProductInfoOpen(false);
 
         form.setData({
             id: product.id,
@@ -298,16 +286,6 @@ export default function AdminProducts({ products, categories, sizeCharts = [], a
             additional_images: null,
             variants: '[]',
             settings: {
-                product_info_status: product.settings?.product_info_status || 'enabled',
-                product_info_design: product.settings?.product_info_design || 'default',
-                product_info_return_label: product.settings?.product_info_return_label || 'Return',
-                product_info_return_value: product.settings?.product_info_return_value || 'Instant',
-                product_info_exchange_label: product.settings?.product_info_exchange_label || 'Exchange',
-                product_info_exchange_value: product.settings?.product_info_exchange_value || 'Not Exchangeable',
-                product_info_delivery_label: product.settings?.product_info_delivery_label || 'Delivery Time',
-                product_info_delivery_value: product.settings?.product_info_delivery_value || '2 Days',
-                product_info_payment_label: product.settings?.product_info_payment_label || 'Payment',
-                product_info_payment_value: product.settings?.product_info_payment_value || 'COD Available',
                 comparison_status: product.settings?.comparison_status || 'enabled',
                 comparison_specs: product.settings?.comparison_specs || '',
                 is_quotation_product: product.settings?.is_quotation_product || 'false',
@@ -332,16 +310,6 @@ export default function AdminProducts({ products, categories, sizeCharts = [], a
     const handleNewClick = () => {
         form.reset();
         form.setData('settings', {
-            product_info_status: 'enabled',
-            product_info_design: 'default',
-            product_info_return_label: 'Return',
-            product_info_return_value: 'Instant',
-            product_info_exchange_label: 'Exchange',
-            product_info_exchange_value: 'Not Exchangeable',
-            product_info_delivery_label: 'Delivery Time',
-            product_info_delivery_value: '2 Days',
-            product_info_payment_label: 'Payment',
-            product_info_payment_value: 'COD Available',
             comparison_status: 'enabled',
             comparison_specs: '',
             is_quotation_product: 'false',
@@ -1179,171 +1147,6 @@ export default function AdminProducts({ products, categories, sizeCharts = [], a
                                         )}
                                     </div>
                                 )}
-
-                                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/70">
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsProductInfoOpen((open) => !open)}
-                                        className="flex w-full items-center justify-between gap-4 p-4 text-left transition hover:bg-white/70"
-                                    >
-                                        <div>
-                                            <h4 className="font-bold text-slate-700 uppercase tracking-wider text-[10px]">Product Info Box</h4>
-                                            <p className="text-[10px] text-slate-500 mt-1">Set product-specific return, exchange, delivery and merchant details.</p>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            <span className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase ${form.data.settings.product_info_status === 'enabled' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}>
-                                                {form.data.settings.product_info_status || 'enabled'}
-                                            </span>
-                                            <ChevronDown className={`h-4 w-4 text-slate-500 transition-transform ${isProductInfoOpen ? 'rotate-180' : ''}`} />
-                                        </div>
-                                    </button>
-
-                                    {isProductInfoOpen && (
-                                        <div className="space-y-4 border-t border-slate-200 p-4">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <span className="text-[10px] font-bold uppercase text-slate-500">Status</span>
-                                                <select
-                                                    value={form.data.settings.product_info_status}
-                                                    onChange={e => form.setData('settings', {
-                                                        ...form.data.settings,
-                                                        product_info_status: e.target.value
-                                                    })}
-                                                    className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white"
-                                                >
-                                                    <option value="enabled">Enabled</option>
-                                                    <option value="disabled">Disabled</option>
-                                                </select>
-                                            </div>
-
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label className="font-bold text-slate-655 uppercase">Design</label>
-                                            <select
-                                                value={form.data.settings.product_info_design}
-                                                onChange={e => form.setData('settings', {
-                                                    ...form.data.settings,
-                                                    product_info_design: e.target.value
-                                                })}
-                                                className="w-full mt-1 px-3.5 py-2.5 border border-slate-250 rounded-xl text-xs focus:outline-none"
-                                            >
-                                                <option value="default">Default</option>
-                                                <option value="light">Light</option>
-                                                <option value="outline">Outline</option>
-                                            </select>
-                                        </div>
-                                        <div />
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label className="font-bold text-slate-655 uppercase">Return Label</label>
-                                            <input
-                                                type="text"
-                                                value={form.data.settings.product_info_return_label}
-                                                onChange={e => form.setData('settings', {
-                                                    ...form.data.settings,
-                                                    product_info_return_label: e.target.value
-                                                })}
-                                                className="w-full mt-1 px-3.5 py-2.5 border border-slate-250 rounded-xl text-xs focus:outline-none"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="font-bold text-slate-655 uppercase">Return Value</label>
-                                            <input
-                                                type="text"
-                                                value={form.data.settings.product_info_return_value}
-                                                onChange={e => form.setData('settings', {
-                                                    ...form.data.settings,
-                                                    product_info_return_value: e.target.value
-                                                })}
-                                                className="w-full mt-1 px-3.5 py-2.5 border border-slate-250 rounded-xl text-xs focus:outline-none"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label className="font-bold text-slate-655 uppercase">Exchange Label</label>
-                                            <input
-                                                type="text"
-                                                value={form.data.settings.product_info_exchange_label}
-                                                onChange={e => form.setData('settings', {
-                                                    ...form.data.settings,
-                                                    product_info_exchange_label: e.target.value
-                                                })}
-                                                className="w-full mt-1 px-3.5 py-2.5 border border-slate-250 rounded-xl text-xs focus:outline-none"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="font-bold text-slate-655 uppercase">Exchange Value</label>
-                                            <input
-                                                type="text"
-                                                value={form.data.settings.product_info_exchange_value}
-                                                onChange={e => form.setData('settings', {
-                                                    ...form.data.settings,
-                                                    product_info_exchange_value: e.target.value
-                                                })}
-                                                className="w-full mt-1 px-3.5 py-2.5 border border-slate-250 rounded-xl text-xs focus:outline-none"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label className="font-bold text-slate-655 uppercase">Delivery Label</label>
-                                            <input
-                                                type="text"
-                                                value={form.data.settings.product_info_delivery_label}
-                                                onChange={e => form.setData('settings', {
-                                                    ...form.data.settings,
-                                                    product_info_delivery_label: e.target.value
-                                                })}
-                                                className="w-full mt-1 px-3.5 py-2.5 border border-slate-250 rounded-xl text-xs focus:outline-none"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="font-bold text-slate-655 uppercase">Delivery Value</label>
-                                            <input
-                                                type="text"
-                                                value={form.data.settings.product_info_delivery_value}
-                                                onChange={e => form.setData('settings', {
-                                                    ...form.data.settings,
-                                                    product_info_delivery_value: e.target.value
-                                                })}
-                                                className="w-full mt-1 px-3.5 py-2.5 border border-slate-250 rounded-xl text-xs focus:outline-none"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label className="font-bold text-slate-655 uppercase">Payment Label</label>
-                                            <input
-                                                type="text"
-                                                value={form.data.settings.product_info_payment_label}
-                                                onChange={e => form.setData('settings', {
-                                                    ...form.data.settings,
-                                                    product_info_payment_label: e.target.value
-                                                })}
-                                                className="w-full mt-1 px-3.5 py-2.5 border border-slate-250 rounded-xl text-xs focus:outline-none"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="font-bold text-slate-655 uppercase">Payment Value</label>
-                                            <input
-                                                type="text"
-                                                value={form.data.settings.product_info_payment_value}
-                                                onChange={e => form.setData('settings', {
-                                                    ...form.data.settings,
-                                                    product_info_payment_value: e.target.value
-                                                })}
-                                                className="w-full mt-1 px-3.5 py-2.5 border border-slate-250 rounded-xl text-xs focus:outline-none"
-                                            />
-                                        </div>
-                                    </div>
-</div>
-                                    )}
-                                </div>
                                 <div>
                                     <label className="font-bold text-slate-655 uppercase">Full Description (HTML Supported)</label>
                                     <div className="mt-1 overflow-hidden rounded-xl border border-slate-250 bg-white focus-within:ring-1 focus-within:ring-orange-500">

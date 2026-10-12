@@ -4,7 +4,7 @@ import { Head, useForm } from '@inertiajs/react';
 import AdminLayout from '../../Layouts/AdminLayout';
 import { 
     Save, Monitor, Tablet, Smartphone, Upload, Loader2, Plus, Trash2, 
-    Palette, Type, Layout as LayoutIcon, Play, Compass, CreditCard, ShoppingBag, Eye,
+    Palette, Type, Layout as LayoutIcon, Play, Compass, ShoppingBag, Eye,
     ExternalLink, X, Sliders, Search, Phone, Send, Share2, GitCompare, Heart, FileText
 } from 'lucide-react';
 import WhatsAppIcon from '../../Components/WhatsAppIcon';
@@ -62,27 +62,26 @@ const ColorPickerInput = ({ label, value, onChange, fallback = '#000000' }) => {
     );
 };
 
-const defaultHeaderBottomNavItems = [
-    { title: 'Categories', link: '/main-categories', visible: true, order: 1 },
-    { title: 'Shop', link: '/shop', visible: true, order: 2 },
-    { title: 'Promotions/Campaigns', link: '/campaigns', visible: true, order: 3 },
-    { title: 'Shop By Brands', link: '/shop-by-brands', visible: true, order: 4 },
-    { title: 'Quotation Request', link: '/quotation-request', visible: true, order: 5 },
-    { title: 'Our Contacts', link: '#contact', visible: true, order: 6 },
-    { title: 'Return Policy', link: '#service', visible: true, order: 7 },
-    { title: 'Terms & Conditions', link: '#footer', visible: true, order: 8 },
+const defaultRoseNavItems = [
+    { title: 'Home', link: '/', visible: true },
+    { title: 'Collections', link: '/main-categories', visible: true },
+    { title: 'Jamdani Sarees', link: '/category/jamdani', visible: true },
+    { title: 'Lehengas', link: '/category/lehengas', visible: true },
+    { title: 'About Us', link: '#about', visible: true },
+    { title: 'Contact', link: '#contact', visible: true },
 ];
 
-const parseHeaderBottomNavItems = (value) => {
+const parseHeaderNavItems = (value) => {
     if (Array.isArray(value)) return value;
-    if (!value) return defaultHeaderBottomNavItems;
+    if (!value) return defaultRoseNavItems;
     try {
         const parsed = JSON.parse(value);
-        return Array.isArray(parsed) && parsed.length ? parsed : defaultHeaderBottomNavItems;
+        return Array.isArray(parsed) && parsed.length ? parsed : defaultRoseNavItems;
     } catch {
-        return defaultHeaderBottomNavItems;
+        return defaultRoseNavItems;
     }
 };
+
 export default function ThemeCustomize({ settings }) {
     const storeName = useStoreName();
 
@@ -120,50 +119,19 @@ export default function ThemeCustomize({ settings }) {
         breadcrumb_design: 'default',
         category_header_status: 'enabled',
         category_header_design: 'default',
-        product_info_status: 'enabled',
-        product_info_design: 'default',
-        product_info_return_label: 'Return',
-        product_info_return_value: 'Instant',
-        product_info_exchange_label: 'Exchange',
-        product_info_exchange_value: 'Not Exchangeable',
-        product_info_delivery_label: 'Delivery Time',
-        product_info_delivery_value: '2 Days',
-        product_info_payment_label: 'Payment',
-        product_info_payment_value: 'COD Available',
-        product_info_merchant_shop_label: 'Merchant Shop',
-        product_info_merchant_name: 'Al-Baraka',
-        product_info_merchant_verified_label: 'Verified',
 
-        header_design: 'classic',
-        header_modern_bg_color: '#08bde3',
-        header_modern_text_color: '#ffffff',
-        header_bg_color: '#c2005f',
-        header_text_color: '#ffffff',
-        header_font_family: 'Outfit',
-        header_menu_font_family: 'Outfit',
-        header_bottom_bg_color: '#e11d74',
-        header_bottom_text_color: '#0f172a',
-        header_bottom_active_color: '#0f172a',
-        header_bottom_font_family: 'Outfit',
-        header_bottom_nav_mode: 'manual',
-        header_featured_show_campaigns: 'true',
-        header_featured_show_quotation: 'true',
-        header_featured_show_flash: 'true',
-        header_show_category_menu: 'true',
-        header_show_compare: 'true',
-        header_show_wishlist: 'true',
-        header_show_cart: 'true',
-        header_show_quotation: 'true',
-        header_modern_show_track_order: 'true',
-        header_show_support: 'true',
-        header_bottom_nav_items: JSON.stringify(defaultHeaderBottomNavItems),
         header_sticky: 'true',
-        header_logo_text: 'Online Store',
-        header_logo_image: '',
-        header_announcement_active: 'true',
-        header_announcement_text: 'Grand Launching Sale! Get 15% OFF with coupon LAUNCH15 | COD Available Nationwide',
-        header_announcement_bg: '#0f172a',
-        header_announcement_color: '#ffffff',
+        header_logo_text: 'Rose Fashion',
+        header_logo_image: '/logo.png',
+        header_nav_items: JSON.stringify(defaultRoseNavItems),
+        header_show_social_button: 'true',
+        header_social_button_text: 'FB Page',
+        header_social_button_url: 'https://www.facebook.com/share/18Ttrev5mS/',
+        announcement_bar_status: 'enabled',
+        announcement_text: '✨ Welcome to Rose Fashion (Dhaka New Market)! Enjoy Nationwide Delivery across Bangladesh.',
+        announcement_link: 'https://www.facebook.com/share/18Ttrev5mS/',
+        announcement_link_text: 'Message on FB to Order!',
+        footer_facebook: 'https://www.facebook.com/share/18Ttrev5mS/',
 
         mobile_bottom_nav_status: 'enabled',
         mobile_bottom_nav_bg_color: '',
@@ -270,36 +238,27 @@ export default function ThemeCustomize({ settings }) {
         });
     };
 
-    const headerBottomNavItems = parseHeaderBottomNavItems(form.data.settings.header_bottom_nav_items);
+    const headerNavItems = parseHeaderNavItems(form.data.settings.header_nav_items);
 
-    const saveHeaderBottomNavItems = (items) => {
-        const normalized = items
-            .map((item, index) => ({
-                title: item.title || '',
-                link: item.link || '',
-                visible: item.visible !== false,
-                order: Number(item.order || index + 1),
-            }))
-            .sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
-
-        handleFieldChange('header_bottom_nav_items', JSON.stringify(normalized));
+    const saveHeaderNavItems = (items) => {
+        handleFieldChange('header_nav_items', JSON.stringify(items));
     };
 
-    const updateHeaderBottomNavItem = (index, key, value) => {
-        const next = [...headerBottomNavItems];
-        next[index] = { ...next[index], [key]: value };
-        saveHeaderBottomNavItems(next);
+    const updateHeaderNavItem = (index, key, val) => {
+        const next = [...headerNavItems];
+        next[index] = { ...next[index], [key]: val };
+        saveHeaderNavItems(next);
     };
 
-    const addHeaderBottomNavItem = () => {
-        saveHeaderBottomNavItems([
-            ...headerBottomNavItems,
-            { title: 'New Link', link: '/', visible: true, order: headerBottomNavItems.length + 1 }
+    const addHeaderNavItem = () => {
+        saveHeaderNavItems([
+            ...headerNavItems,
+            { title: 'New Menu Item', link: '#', visible: true }
         ]);
     };
 
-    const deleteHeaderBottomNavItem = (index) => {
-        saveHeaderBottomNavItems(headerBottomNavItems.filter((_, itemIndex) => itemIndex !== index));
+    const deleteHeaderNavItem = (index) => {
+        saveHeaderNavItems(headerNavItems.filter((_, i) => i !== index));
     };
 
     const handleLogoUpload = async (e) => {
@@ -314,6 +273,7 @@ export default function ThemeCustomize({ settings }) {
             });
             if (response.data?.url) {
                 handleFieldChange('store_logo', response.data.url);
+                handleFieldChange('header_logo_image', response.data.url);
             }
         } catch (err) {
             alert('Upload failed.');
@@ -350,12 +310,10 @@ export default function ThemeCustomize({ settings }) {
     const sections = [
         { id: 'general', name: 'General Config', category: 'Branding', icon: LayoutIcon, desc: 'Logo, favicon & loader' },
         { id: 'colors', name: 'Color Palette', category: 'Branding', icon: Palette, desc: 'Theme colors & background' },
-        { id: 'header', name: 'Header Builder', category: 'Navigation', icon: Monitor, desc: 'Logo text, stickiness & colors' },
-        { id: 'header_bottom_nav', name: 'Header Bottom Nav', category: 'Navigation', icon: LayoutIcon, desc: 'Manage desktop header menu links' },
+        { id: 'header', name: 'Header & Announcement', category: 'Navigation', icon: Monitor, desc: 'Logo, sticky bar, and announcement text' },
         { id: 'mobile_bottom_nav', name: 'Mobile Bottom Nav', category: 'Navigation', icon: Smartphone, desc: 'Mobile app-style quick navigation' },
         { id: 'breadcrumbs', name: 'Breadcrumbs', category: 'Navigation', icon: Compass, desc: 'Breadcrumb styles & shadow' },
         { id: 'product_details', name: 'Product Details', category: 'Components', icon: ShoppingBag, desc: 'Call, WhatsApp, compare & share' },
-        { id: 'product_info', name: 'Product Info Box', category: 'Components', icon: CreditCard, desc: 'Delivery, returns & merchant badges' },
         { id: 'typography', name: 'Typography & Fonts', category: 'Styling', icon: Type, desc: 'Font families, weights & sizes' },
         { id: 'layout', name: 'Layout & Spacers', category: 'Styling', icon: Sliders, desc: 'Container widths & radius' },
         { id: 'buttons', name: 'Button Styles', category: 'Components', icon: Play, desc: 'Radius, hover & animations' },
@@ -652,345 +610,231 @@ export default function ThemeCustomize({ settings }) {
                             </div>
                         )}
 
-                        {/* Panel 3: Header Builder Settings */}
+                        {/* Panel 3: Header & Announcement Settings */}
                         {activeSection === 'header' && (
                             <div className="flex flex-col gap-6 text-xs animate-fadeIn">
-                                <div>
-                                    <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-4">Header Main Bar</h3>
-                                    <div className="mb-5 rounded-2xl border border-cyan-100 bg-cyan-50/60 p-4">
-                                        <label className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Header Design</label>
-                                        <select
-                                            value={form.data.settings.header_design || 'classic'}
-                                            onChange={e => handleFieldChange('header_design', e.target.value)}
-                                            className="w-full mt-1.5 px-3 py-2.5 border border-cyan-100 rounded-xl focus:outline-none bg-white font-semibold text-xs"
-                                        >
-                                            <option value="classic">Classic Header</option>
-                                            <option value="humanbeing">HumanBeing Cyan Header</option>
-                                        </select>
-                                        <p className="mt-2 text-[11px] font-medium text-slate-500">Choose the storefront top header style. The bottom menu keeps using your Header Bottom Nav settings.</p>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                        <ColorPickerInput
-                                            label="Classic Header Background"
-                                            value={form.data.settings.header_bg_color}
-                                            onChange={val => handleFieldChange('header_bg_color', val)}
-                                            fallback="#c2005f"
-                                        />
-                                        <ColorPickerInput
-                                            label="Classic Header Text / Icon"
-                                            value={form.data.settings.header_text_color}
-                                            onChange={val => handleFieldChange('header_text_color', val)}
-                                            fallback="#ffffff"
-                                        />
-                                        <ColorPickerInput
-                                            label="HumanBeing Header Background"
-                                            value={form.data.settings.header_modern_bg_color}
-                                            onChange={val => handleFieldChange('header_modern_bg_color', val)}
-                                            fallback="#08bde3"
-                                        />
-                                        <ColorPickerInput
-                                            label="HumanBeing Header Text / Icon"
-                                            value={form.data.settings.header_modern_text_color}
-                                            onChange={val => handleFieldChange('header_modern_text_color', val)}
-                                            fallback="#ffffff"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-4 border-t border-slate-100">
-                                    <div>
-                                        <label className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Header Font Family</label>
-                                        <select
-                                            value={form.data.settings.header_font_family || 'Outfit'}
-                                            onChange={e => handleFieldChange('header_font_family', e.target.value)}
-                                            className="w-full mt-1.5 px-3 py-2.5 border border-slate-200 rounded-xl focus:outline-none bg-white font-semibold text-xs"
-                                        >
-                                            <option value="Outfit">Outfit</option>
-                                            <option value="Inter">Inter</option>
-                                            <option value="Roboto">Roboto</option>
-                                            <option value="Montserrat">Montserrat</option>
-                                            <option value="Playfair Display">Playfair Display</option>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Header Menu Font</label>
-                                        <select
-                                            value={form.data.settings.header_menu_font_family || 'Outfit'}
-                                            onChange={e => handleFieldChange('header_menu_font_family', e.target.value)}
-                                            className="w-full mt-1.5 px-3 py-2.5 border border-slate-200 rounded-xl focus:outline-none bg-white font-semibold text-xs"
-                                        >
-                                            <option value="Outfit">Outfit</option>
-                                            <option value="Inter">Inter</option>
-                                            <option value="Roboto">Roboto</option>
-                                            <option value="Montserrat">Montserrat</option>
-                                            <option value="Playfair Display">Playfair Display</option>
-                                        </select>
-                                    </div>
-
-                                    <SwitchToggle
-                                        label="Header Sticky Position"
-                                        description="Keep header fixed at top on page scroll"
-                                        checked={form.data.settings.header_sticky === 'true'}
-                                        onChange={val => handleFieldChange('header_sticky', val ? 'true' : 'false')}
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-4 border-t border-slate-100">
-                                    <div>
-                                        <label className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Header Logo Text</label>
-                                        <input
-                                            type="text"
-                                            value={form.data.settings.header_logo_text || ''}
-                                            onChange={e => handleFieldChange('header_logo_text', e.target.value)}
-                                            className="w-full mt-1.5 px-3 py-2.5 border border-slate-200 rounded-xl focus:outline-none font-semibold text-xs"
-                                            placeholder="Online Store"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Header Logo Image URL</label>
-                                        <input
-                                            type="text"
-                                            value={form.data.settings.header_logo_image || ''}
-                                            onChange={e => handleFieldChange('header_logo_image', e.target.value)}
-                                            className="w-full mt-1.5 px-3 py-2.5 border border-slate-200 rounded-xl focus:outline-none font-mono text-xs"
-                                            placeholder="https://..."
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="border-t border-slate-100 pt-5">
-                                    <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-4">Header Action Buttons</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                                        <SwitchToggle
-                                            label="Show Categories Dropdown Button"
-                                            description="Display the large Categories button beside the logo/search."
-                                            checked={form.data.settings.header_show_category_menu !== 'false'}
-                                            onChange={val => handleFieldChange('header_show_category_menu', val ? 'true' : 'false')}
-                                        />
-                                        <SwitchToggle
-                                            label="Show Compare Button"
-                                            description="Display compare shortcut in the main header."
-                                            checked={form.data.settings.header_show_compare !== 'false'}
-                                            onChange={val => handleFieldChange('header_show_compare', val ? 'true' : 'false')}
-                                        />
-                                        <SwitchToggle
-                                            label="Show Wishlist Button"
-                                            description="Display wishlist shortcut in the main header."
-                                            checked={form.data.settings.header_show_wishlist !== 'false'}
-                                            onChange={val => handleFieldChange('header_show_wishlist', val ? 'true' : 'false')}
-                                        />
-                                        <SwitchToggle
-                                            label="Show Cart Button"
-                                            description="Display cart shortcut in the main header."
-                                            checked={form.data.settings.header_show_cart !== 'false'}
-                                            onChange={val => handleFieldChange('header_show_cart', val ? 'true' : 'false')}
-                                        />
-                                        <SwitchToggle
-                                            label="Show Quotation Button"
-                                            description="Display quotation request CTA in the main header."
-                                            checked={form.data.settings.header_show_quotation !== 'false'}
-                                            onChange={val => handleFieldChange('header_show_quotation', val ? 'true' : 'false')}
-                                        />
-                                        <SwitchToggle
-                                            label="Show Track Order Button"
-                                            description="Display Track Order pill in the HumanBeing header style."
-                                            checked={form.data.settings.header_modern_show_track_order !== 'false'}
-                                            onChange={val => handleFieldChange('header_modern_show_track_order', val ? 'true' : 'false')}
-                                        />
-                                        <SwitchToggle
-                                            label="Show Customer Support"
-                                            description="Display customer phone support button on the header bottom row."
-                                            checked={form.data.settings.header_show_support !== 'false'}
-                                            onChange={val => handleFieldChange('header_show_support', val ? 'true' : 'false')}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="border-t border-slate-100 pt-5">
-                                    <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-4">Header Bottom / Category Row</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                        <ColorPickerInput
-                                            label="Bottom Bar Background"
-                                            value={form.data.settings.header_bottom_bg_color}
-                                            onChange={val => handleFieldChange('header_bottom_bg_color', val)}
-                                            fallback="#e11d74"
-                                        />
-                                        <ColorPickerInput
-                                            label="Bottom Bar Text Color"
-                                            value={form.data.settings.header_bottom_text_color}
-                                            onChange={val => handleFieldChange('header_bottom_text_color', val)}
-                                            fallback="#0f172a"
-                                        />
-                                        <ColorPickerInput
-                                            label="Active Link Indicator"
-                                            value={form.data.settings.header_bottom_active_color}
-                                            onChange={val => handleFieldChange('header_bottom_active_color', val)}
-                                            fallback="#0f172a"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Panel 4: Header Bottom Navigation Settings */}
-                        {activeSection === 'header_bottom_nav' && (
-                            <div className="flex flex-col gap-6 text-xs animate-fadeIn">
-                                <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_280px] md:items-center">
+                                {/* Announcement Bar */}
+                                <div className="rounded-2xl border border-rose-200/80 bg-rose-50/40 p-5 shadow-xs">
+                                    <div className="flex items-center justify-between pb-4 border-b border-rose-100">
                                         <div>
-                                            <h3 className="text-sm font-extrabold text-slate-900">Header Bottom Navigation Source</h3>
-                                            <p className="mt-1 text-[11px] text-slate-500">Choose manual links, or automatically show active categories marked as Featured on Home.</p>
+                                            <h3 className="text-sm font-extrabold text-slate-900">Top Announcement Bar</h3>
+                                            <p className="mt-0.5 text-[11px] text-slate-500">Maroon banner displayed above the Rose Fashion header on all pages.</p>
                                         </div>
-                                        <select
-                                            value={form.data.settings.header_bottom_nav_mode || 'manual'}
-                                            onChange={e => handleFieldChange('header_bottom_nav_mode', e.target.value)}
-                                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
-                                        >
-                                            <option value="manual">Manual Links</option>
-                                            <option value="categories">Featured Categories</option>
-                                        </select>
+                                        <SwitchToggle
+                                            label={form.data.settings.announcement_bar_status !== 'disabled' ? 'Enabled' : 'Disabled'}
+                                            description="Show announcement bar"
+                                            checked={form.data.settings.announcement_bar_status !== 'disabled'}
+                                            onChange={val => handleFieldChange('announcement_bar_status', val ? 'enabled' : 'disabled')}
+                                        />
+                                    </div>
+
+                                    <div className="mt-4 grid grid-cols-1 gap-4">
+                                        <div>
+                                            <label className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Announcement Text</label>
+                                            <textarea
+                                                rows={2}
+                                                value={form.data.settings.announcement_text || ''}
+                                                onChange={e => handleFieldChange('announcement_text', e.target.value)}
+                                                className="w-full mt-1.5 px-3 py-2.5 border border-slate-200 rounded-xl focus:outline-none font-medium text-xs bg-white"
+                                                placeholder="✨ Welcome to Rose Fashion (Dhaka New Market)! Enjoy Nationwide Delivery across Bangladesh."
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Announcement Action Link Text</label>
+                                                <input
+                                                    type="text"
+                                                    value={form.data.settings.announcement_link_text || ''}
+                                                    onChange={e => handleFieldChange('announcement_link_text', e.target.value)}
+                                                    className="w-full mt-1.5 px-3 py-2.5 border border-slate-200 rounded-xl focus:outline-none font-semibold text-xs bg-white"
+                                                    placeholder="Message on FB to Order!"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Announcement Action URL</label>
+                                                <input
+                                                    type="text"
+                                                    value={form.data.settings.announcement_link || ''}
+                                                    onChange={e => handleFieldChange('announcement_link', e.target.value)}
+                                                    className="w-full mt-1.5 px-3 py-2.5 border border-slate-200 rounded-xl focus:outline-none font-mono text-xs bg-white"
+                                                    placeholder="https://www.facebook.com/share/..."
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
-                                {(form.data.settings.header_bottom_nav_mode || 'manual') === 'manual' ? (
-                                    <>
-                                        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                                <div>
-                                                    <h3 className="text-sm font-extrabold text-slate-900">Manual Navigation Items</h3>
-                                                    <p className="mt-1 text-[11px] text-slate-500">Create, edit, hide, reorder, or delete each header bottom link.</p>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={addHeaderBottomNavItem}
-                                                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-slate-800"
-                                                >
-                                                    <Plus className="h-4 w-4" /> Add Nav Item
-                                                </button>
-                                            </div>
-                                        </div>
+                                {/* Rose Fashion Main Header Bar */}
+                                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+                                    <h3 className="text-sm font-extrabold text-slate-900 mb-4">Header Navigation Bar</h3>
 
-                                        <div className="space-y-3">
-                                            {headerBottomNavItems.map((item, index) => (
-                                                <div key={`${item.title}-${index}`} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                                                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1.2fr_1.5fr_110px_130px_44px] lg:items-end">
-                                                        <div>
-                                                            <label className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Navigation Title</label>
-                                                            <input
-                                                                type="text"
-                                                                value={item.title || ''}
-                                                                onChange={e => updateHeaderBottomNavItem(index, 'title', e.target.value)}
-                                                                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-slate-900/10"
-                                                                placeholder="e.g. Shop"
-                                                            />
-                                                        </div>
-                                                        <div>
-                                                            <label className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Slug / URL / Link</label>
-                                                            <input
-                                                                type="text"
-                                                                value={item.link || ''}
-                                                                onChange={e => updateHeaderBottomNavItem(index, 'link', e.target.value)}
-                                                                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-slate-900/10"
-                                                                placeholder="/shop, shop, #contact, https://..."
-                                                            />
-                                                        </div>
-                                                        <div>
-                                                            <label className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Order</label>
-                                                            <input
-                                                                type="number"
-                                                                min="1"
-                                                                value={item.order || index + 1}
-                                                                onChange={e => updateHeaderBottomNavItem(index, 'order', e.target.value)}
-                                                                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-slate-900/10"
-                                                            />
-                                                        </div>
-                                                        <SwitchToggle
-                                                            label={item.visible === false ? 'Hidden' : 'Visible'}
-                                                            description="Show in header"
-                                                            checked={item.visible !== false}
-                                                            onChange={val => updateHeaderBottomNavItem(index, 'visible', val)}
-                                                        />
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => deleteHeaderBottomNavItem(index)}
-                                                            className="grid h-10 w-10 place-items-center rounded-xl border border-red-100 bg-red-50 text-red-500 transition hover:bg-red-100"
-                                                            title="Delete navigation item"
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <SwitchToggle
+                                            label="Header Sticky Position"
+                                            description="Keep the white Rose Fashion header sticky at the top when scrolling"
+                                            checked={form.data.settings.header_sticky !== 'false'}
+                                            onChange={val => handleFieldChange('header_sticky', val ? 'true' : 'false')}
+                                        />
 
-                                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                                            <p className="mb-3 text-[11px] font-black uppercase tracking-wider text-slate-500">Manual Links Preview</p>
-                                            <div
-                                                className="flex min-h-12 flex-wrap items-center gap-2 rounded-xl px-3 py-2"
-                                                style={{
-                                                    backgroundColor: form.data.settings.header_bottom_bg_color || '#e11d74',
-                                                    color: form.data.settings.header_bottom_text_color || '#0f172a',
-                                                    fontFamily: form.data.settings.header_bottom_font_family || form.data.settings.header_menu_font_family || 'Outfit'
-                                                }}
-                                            >
-                                                {headerBottomNavItems.filter(item => item.visible !== false).map((item, index) => (
-                                                    <span key={`${item.title}-preview-${index}`} className="rounded-lg px-3 py-2 text-[11px] font-bold">
-                                                        {item.title || 'Untitled'}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="rounded-2xl border border-sky-100 bg-sky-50 p-5 text-sky-900">
-                                        <h3 className="text-sm font-extrabold">Featured Categories Mode</h3>
-                                        <p className="mt-2 text-[11px] font-semibold leading-5 text-sky-800">
-                                            The storefront will show active parent categories where <span className="font-black">Featured on Home</span> is enabled. If a category has children, it shows a dropdown arrow like modern ecommerce category menus.
-                                        </p>
-                                        <div className="mt-4 grid gap-3 md:grid-cols-3">
-                                            <SwitchToggle
-                                                label="Promotions/Campaigns"
-                                                description="Show campaigns link after categories"
-                                                checked={form.data.settings.header_featured_show_campaigns !== 'false'}
-                                                onChange={val => handleFieldChange('header_featured_show_campaigns', val ? 'true' : 'false')}
+                                        <div>
+                                            <label className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Header Brand Name / Fallback Text</label>
+                                            <input
+                                                type="text"
+                                                value={form.data.settings.header_logo_text || ''}
+                                                onChange={e => handleFieldChange('header_logo_text', e.target.value)}
+                                                className="w-full mt-1.5 px-3 py-2.5 border border-slate-200 rounded-xl focus:outline-none font-semibold text-xs"
+                                                placeholder="Rose Fashion"
                                             />
-                                            <SwitchToggle
-                                                label="Quotation Request"
-                                                description="Show quotation request link"
-                                                checked={form.data.settings.header_featured_show_quotation !== 'false'}
-                                                onChange={val => handleFieldChange('header_featured_show_quotation', val ? 'true' : 'false')}
-                                            />
-                                            <SwitchToggle
-                                                label="Flash"
-                                                description="Show flash section link"
-                                                checked={form.data.settings.header_featured_show_flash !== 'false'}
-                                                onChange={val => handleFieldChange('header_featured_show_flash', val ? 'true' : 'false')}
-                                            />
-                                        </div>
-                                        <div className="mt-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-sky-100">
-                                            <p className="mb-3 text-[10px] font-black uppercase tracking-wider text-slate-400">Example</p>
-                                            <div
-                                                className="flex min-h-12 flex-wrap items-center gap-2 rounded-xl px-3 py-2"
-                                                style={{
-                                                    backgroundColor: form.data.settings.header_bottom_bg_color || '#e11d74',
-                                                    color: form.data.settings.header_bottom_text_color || '#0f172a'
-                                                }}
-                                            >
-                                                {[
-                                                    'Smart Electronics',
-                                                    "Premium Men's Apparel",
-                                                    'Health & Cosmetics',
-                                                    form.data.settings.header_featured_show_campaigns !== 'false' ? 'Promotions/Campaigns' : null,
-                                                    form.data.settings.header_featured_show_quotation !== 'false' ? 'Quotation Request' : null,
-                                                    form.data.settings.header_featured_show_flash !== 'false' ? 'Flash' : null,
-                                                ].filter(Boolean).map(label => (
-                                                    <span key={label} className="rounded-lg px-3 py-2 text-[11px] font-bold">{label}</span>
-                                                ))}
-                                            </div>
                                         </div>
                                     </div>
-                                )}
+
+                                    <div className="pt-4 mt-4 border-t border-slate-100">
+                                        <label className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Header Logo Image URL</label>
+                                        <div className="flex gap-2 items-center mt-1.5">
+                                            <input
+                                                type="text"
+                                                value={form.data.settings.header_logo_image || ''}
+                                                onChange={e => handleFieldChange('header_logo_image', e.target.value)}
+                                                className="flex-1 px-3 py-2.5 border border-slate-200 rounded-xl focus:outline-none font-mono text-xs"
+                                                placeholder="/logo.png"
+                                            />
+                                            <label className="cursor-pointer px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold flex items-center gap-1.5 transition-all h-10 select-none text-xs shrink-0">
+                                                {uploadingLogo ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                                                Upload
+                                                <input type="file" onChange={handleLogoUpload} accept="image/*" className="hidden" disabled={uploadingLogo} />
+                                            </label>
+                                        </div>
+                                        {(form.data.settings.header_logo_image || form.data.settings.store_logo) && (
+                                            <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-xl w-fit flex items-center gap-3 mt-3">
+                                                <img
+                                                    src={form.data.settings.header_logo_image || form.data.settings.store_logo}
+                                                    alt="Header Logo preview"
+                                                    className="w-10 h-10 rounded-full object-cover border border-rose-200 shadow-sm"
+                                                />
+                                                <div>
+                                                    <div className="text-[11px] font-bold text-slate-800">Circular Header Logo</div>
+                                                    <div className="text-[10px] text-slate-400">Renders round with soft shadow in the header</div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Header Navigation Menu Links Manager */}
+                                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-slate-100 gap-3">
+                                        <div>
+                                            <h3 className="text-sm font-extrabold text-slate-900">Header Navigation Menu Links</h3>
+                                            <p className="mt-0.5 text-[11px] text-slate-500">Manage the menu links shown in both the desktop navbar and mobile menu drawer.</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={addHeaderNavItem}
+                                            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-slate-800 shrink-0"
+                                        >
+                                            <Plus className="h-3.5 w-3.5" /> Add Menu Link
+                                        </button>
+                                    </div>
+
+                                    <div className="mt-4 space-y-3">
+                                        {headerNavItems.map((item, index) => (
+                                            <div key={`${item.title}-${index}`} className="p-3.5 rounded-xl border border-slate-200/80 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center gap-3">
+                                                <div className="flex-1">
+                                                    <label className="font-bold text-slate-600 uppercase tracking-wider text-[10px]">Link Title</label>
+                                                    <input
+                                                        type="text"
+                                                        value={item.title || ''}
+                                                        onChange={e => updateHeaderNavItem(index, 'title', e.target.value)}
+                                                        className="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none font-semibold text-xs bg-white"
+                                                        placeholder="e.g. Jamdani Sarees"
+                                                    />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <label className="font-bold text-slate-600 uppercase tracking-wider text-[10px]">Target URL / Anchor</label>
+                                                    <input
+                                                        type="text"
+                                                        value={item.link || ''}
+                                                        onChange={e => updateHeaderNavItem(index, 'link', e.target.value)}
+                                                        className="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none font-mono text-xs bg-white"
+                                                        placeholder="e.g. /, #collections, #shop-products, #contact"
+                                                    />
+                                                </div>
+                                                <div className="flex items-center gap-2 pt-2 sm:pt-4 shrink-0">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => updateHeaderNavItem(index, 'visible', item.visible === false)}
+                                                        className={`px-3 py-2 rounded-lg text-xs font-bold border transition cursor-pointer ${
+                                                            item.visible !== false 
+                                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                                                                : 'bg-slate-100 text-slate-500 border-slate-200'
+                                                        }`}
+                                                    >
+                                                        {item.visible !== false ? 'Visible' : 'Hidden'}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => deleteHeaderNavItem(index)}
+                                                        className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition border border-rose-100 cursor-pointer"
+                                                        title="Delete link"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Header Action Pill Button (FB Page CTA) */}
+                                <div className="rounded-2xl border border-blue-200/80 bg-blue-50/30 p-5 shadow-xs">
+                                    <div className="flex items-center justify-between pb-4 border-b border-blue-100">
+                                        <div>
+                                            <h3 className="text-sm font-extrabold text-slate-900">Header Action Pill Button</h3>
+                                            <p className="mt-0.5 text-[11px] text-slate-500">The quick-action pill button rendered in the header beside search and cart (e.g. FB Page).</p>
+                                        </div>
+                                        <SwitchToggle
+                                            label={form.data.settings.header_show_social_button !== 'false' ? 'Visible' : 'Hidden'}
+                                            description="Show button in header"
+                                            checked={form.data.settings.header_show_social_button !== 'false'}
+                                            onChange={val => handleFieldChange('header_show_social_button', val ? 'true' : 'false')}
+                                        />
+                                    </div>
+
+                                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Button Label / Text</label>
+                                            <input
+                                                type="text"
+                                                value={form.data.settings.header_social_button_text || ''}
+                                                onChange={e => handleFieldChange('header_social_button_text', e.target.value)}
+                                                className="w-full mt-1.5 px-3 py-2.5 border border-slate-200 rounded-xl focus:outline-none font-semibold text-xs bg-white"
+                                                placeholder="FB Page"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Button Target URL</label>
+                                            <input
+                                                type="text"
+                                                value={form.data.settings.header_social_button_url || form.data.settings.footer_facebook || ''}
+                                                onChange={e => {
+                                                    handleFieldChange('header_social_button_url', e.target.value);
+                                                    handleFieldChange('footer_facebook', e.target.value);
+                                                }}
+                                                className="w-full mt-1.5 px-3 py-2.5 border border-slate-200 rounded-xl focus:outline-none font-mono text-xs bg-white"
+                                                placeholder="https://www.facebook.com/share/..."
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-4 pt-3 border-t border-blue-100 flex items-center justify-between">
+                                        <span className="text-[11px] text-slate-500 font-medium">Button Live Preview:</span>
+                                        <div className="inline-flex items-center gap-2 bg-blue-600 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-sm">
+                                            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                            <span>{form.data.settings.header_social_button_text || 'FB Page'}</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         )}
                         {/* Panel 4: Mobile Bottom Navigation Settings */}
@@ -1180,100 +1024,6 @@ export default function ThemeCustomize({ settings }) {
                                             <option value="shadow-md">Medium (shadow-md)</option>
                                             <option value="shadow-lg">Elevated (shadow-lg)</option>
                                         </select>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Panel 5: Product Info Box */}
-                        {activeSection === 'product_info' && (
-                            <div className="flex flex-col gap-6 text-xs animate-fadeIn">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                    <SwitchToggle
-                                        label="Product Info Box Status"
-                                        description="Display trust badges and delivery details box on product pages."
-                                        checked={form.data.settings.product_info_status === 'enabled'}
-                                        onChange={val => handleFieldChange('product_info_status', val ? 'enabled' : 'disabled')}
-                                    />
-
-                                    <div>
-                                        <label className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Info Box Design Style</label>
-                                        <select
-                                            value={form.data.settings.product_info_design || 'default'}
-                                            onChange={e => handleFieldChange('product_info_design', e.target.value)}
-                                            className="w-full mt-1.5 px-3 py-2.5 border border-slate-200 rounded-xl focus:outline-none bg-white font-semibold text-xs"
-                                        >
-                                            <option value="default">Default Filled</option>
-                                            <option value="light">Light Subtle</option>
-                                            <option value="outline">Border Outline Only</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div className="border-t border-slate-100 pt-5">
-                                    <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-4">Badges & Labels Content</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                        <div className="flex gap-3">
-                                            <div className="flex-1">
-                                                <label className="font-bold text-slate-600 uppercase text-[10px]">Return Label</label>
-                                                <input type="text" value={form.data.settings.product_info_return_label || ''} onChange={e => handleFieldChange('product_info_return_label', e.target.value)} className="w-full mt-1 px-3 py-2 border rounded-xl" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <label className="font-bold text-slate-600 uppercase text-[10px]">Return Value</label>
-                                                <input type="text" value={form.data.settings.product_info_return_value || ''} onChange={e => handleFieldChange('product_info_return_value', e.target.value)} className="w-full mt-1 px-3 py-2 border rounded-xl" />
-                                            </div>
-                                        </div>
-
-                                        <div className="flex gap-3">
-                                            <div className="flex-1">
-                                                <label className="font-bold text-slate-600 uppercase text-[10px]">Exchange Label</label>
-                                                <input type="text" value={form.data.settings.product_info_exchange_label || ''} onChange={e => handleFieldChange('product_info_exchange_label', e.target.value)} className="w-full mt-1 px-3 py-2 border rounded-xl" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <label className="font-bold text-slate-600 uppercase text-[10px]">Exchange Value</label>
-                                                <input type="text" value={form.data.settings.product_info_exchange_value || ''} onChange={e => handleFieldChange('product_info_exchange_value', e.target.value)} className="w-full mt-1 px-3 py-2 border rounded-xl" />
-                                            </div>
-                                        </div>
-
-                                        <div className="flex gap-3">
-                                            <div className="flex-1">
-                                                <label className="font-bold text-slate-600 uppercase text-[10px]">Delivery Label</label>
-                                                <input type="text" value={form.data.settings.product_info_delivery_label || ''} onChange={e => handleFieldChange('product_info_delivery_label', e.target.value)} className="w-full mt-1 px-3 py-2 border rounded-xl" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <label className="font-bold text-slate-600 uppercase text-[10px]">Delivery Value</label>
-                                                <input type="text" value={form.data.settings.product_info_delivery_value || ''} onChange={e => handleFieldChange('product_info_delivery_value', e.target.value)} className="w-full mt-1 px-3 py-2 border rounded-xl" />
-                                            </div>
-                                        </div>
-
-                                        <div className="flex gap-3">
-                                            <div className="flex-1">
-                                                <label className="font-bold text-slate-600 uppercase text-[10px]">Payment Label</label>
-                                                <input type="text" value={form.data.settings.product_info_payment_label || ''} onChange={e => handleFieldChange('product_info_payment_label', e.target.value)} className="w-full mt-1 px-3 py-2 border rounded-xl" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <label className="font-bold text-slate-600 uppercase text-[10px]">Payment Value</label>
-                                                <input type="text" value={form.data.settings.product_info_payment_value || ''} onChange={e => handleFieldChange('product_info_payment_value', e.target.value)} className="w-full mt-1 px-3 py-2 border rounded-xl" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="border-t border-slate-100 pt-5">
-                                    <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-4">Merchant & Shop Badges</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div>
-                                            <label className="font-bold text-slate-600 uppercase text-[10px]">Merchant Label</label>
-                                            <input type="text" value={form.data.settings.product_info_merchant_shop_label || ''} onChange={e => handleFieldChange('product_info_merchant_shop_label', e.target.value)} className="w-full mt-1 px-3 py-2 border rounded-xl" />
-                                        </div>
-                                        <div>
-                                            <label className="font-bold text-slate-600 uppercase text-[10px]">Merchant Name</label>
-                                            <input type="text" value={form.data.settings.product_info_merchant_name || ''} onChange={e => handleFieldChange('product_info_merchant_name', e.target.value)} className="w-full mt-1 px-3 py-2 border rounded-xl" />
-                                        </div>
-                                        <div>
-                                            <label className="font-bold text-slate-600 uppercase text-[10px]">Verified Badge Label</label>
-                                            <input type="text" value={form.data.settings.product_info_merchant_verified_label || ''} onChange={e => handleFieldChange('product_info_merchant_verified_label', e.target.value)} className="w-full mt-1 px-3 py-2 border rounded-xl" />
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1908,32 +1658,56 @@ export default function ThemeCustomize({ settings }) {
                                     previewDevice === 'tablet' ? 'w-[520px]' : 'w-[320px]'
                                 }`}
                             >
-                                {/* Announcement Bar */}
-                                {form.data.settings.header_announcement_active !== 'false' && (
-                                    <div
-                                        style={{
-                                            backgroundColor: form.data.settings.header_announcement_bg || form.data.settings.header_bg_color || form.data.settings.primary_color,
-                                            color: form.data.settings.header_announcement_color || '#ffffff'
-                                        }}
-                                        className="py-1 px-4 text-center text-[10px] font-bold tracking-wider"
-                                    >
-                                        {form.data.settings.header_announcement_text || 'Grand Launching Sale! Get 15% OFF | COD Available'}
+                                {/* Rose Fashion Announcement Bar */}
+                                {form.data.settings.announcement_bar_status !== 'disabled' && (
+                                    <div className="bg-gradient-to-r from-rose-900 via-rose-800 to-rose-900 text-white py-1.5 px-4 text-center text-[10px] font-medium tracking-wide">
+                                        <span>{form.data.settings.announcement_text || '✨ Welcome to Rose Fashion! Enjoy Nationwide Delivery across Bangladesh.'}</span>
+                                        {form.data.settings.announcement_link_text && (
+                                            <span className="underline ml-2 font-bold opacity-90">{form.data.settings.announcement_link_text}</span>
+                                        )}
                                     </div>
                                 )}
 
-                                {/* Header Navbar */}
-                                <div
-                                    className="h-12 border-b px-4 flex items-center justify-between"
-                                    style={{
-                                        backgroundColor: form.data.settings.header_bg_color || form.data.settings.primary_color,
-                                        color: form.data.settings.header_text_color || '#ffffff'
-                                    }}
-                                >
-                                    <span className="text-sm font-black">{form.data.settings.header_logo_text || 'Store'}</span>
-                                    <div className="flex gap-3 text-[10px] font-bold">
-                                        <span>Home</span>
-                                        <span>Products</span>
-                                        <span>Trending</span>
+                                {/* Rose Fashion Header Navbar */}
+                                <div className="h-14 bg-white border-b border-rose-100/70 px-4 flex items-center justify-between shadow-xs">
+                                    <div className="flex items-center gap-2">
+                                        {(form.data.settings.header_logo_image || form.data.settings.store_logo) ? (
+                                            <img
+                                                src={form.data.settings.header_logo_image || form.data.settings.store_logo}
+                                                alt="Logo"
+                                                className="w-10 h-10 rounded-full object-cover shadow-sm border border-rose-100"
+                                            />
+                                        ) : (
+                                            <div className="w-9 h-9 rounded-full bg-rose-600 text-white flex items-center justify-center font-black text-xs">
+                                                RF
+                                            </div>
+                                        )}
+                                        <span className="text-xs font-black text-slate-800 hidden sm:inline">
+                                            {form.data.settings.header_logo_text || 'Rose Fashion'}
+                                        </span>
+                                    </div>
+
+                                    <div className="hidden md:flex gap-4 text-[11px] font-semibold text-slate-700">
+                                        {headerNavItems.filter(item => item.visible !== false).map((item, idx) => (
+                                            <span key={idx} className={idx === 0 ? "text-rose-600 font-bold" : "hover:text-rose-600 cursor-pointer"}>
+                                                {item.title}
+                                            </span>
+                                        ))}
+                                    </div>
+
+                                    <div className="flex items-center gap-2.5">
+                                        <div className="p-1.5 text-slate-500 rounded-full">
+                                            <Search className="w-3.5 h-3.5" />
+                                        </div>
+                                        <div className="relative p-1.5 text-slate-500 rounded-full">
+                                            <ShoppingBag className="w-3.5 h-3.5" />
+                                            <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-rose-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center">1</span>
+                                        </div>
+                                        {form.data.settings.header_show_social_button !== 'false' && (
+                                            <div className="hidden sm:inline-flex items-center gap-1.5 bg-blue-600 text-white text-[10px] font-semibold px-3 py-1 rounded-full shadow-xs">
+                                                <span>{form.data.settings.header_social_button_text || 'FB Page'}</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 

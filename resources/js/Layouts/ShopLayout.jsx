@@ -1,51 +1,98 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
-import { AlertCircle, ArrowUpRight, CheckCircle2, ChevronDown, ChevronRight, GitCompare, Heart, Home, Info, LayoutDashboard, LogOut, Mail, MapPin, Menu, Minus, Phone, Plus, Search, Settings, ShoppingBag, ShoppingCart, Trash2, User, X } from 'lucide-react';
+import { 
+    AlertCircle, 
+    CheckCircle2, 
+    ChevronRight, 
+    Flame,
+    GitCompare, 
+    Heart, 
+    Home, 
+    Info, 
+    LayoutDashboard, 
+    LogOut,
+    Mail, 
+    MapPin, 
+    Menu, 
+    Minus, 
+    Phone, 
+    Plus, 
+    Search, 
+    Settings,
+    ShieldCheck,
+    ShoppingBag, 
+    ShoppingCart, 
+    Sparkles,
+    Tag,
+    Trash2, 
+    Truck,
+    User, 
+    X 
+} from 'lucide-react';
 import { useCart } from '../Contexts/CartContext';
 import { getWishlistItems, removeWishlistProduct } from '../Services/Wishlist';
 import { compareUrl, getCompareItems } from '../Services/Compare';
 import { Tracker } from '../Services/Tracker';
 import MultipleChatPlugin from '../Components/MultipleChatPlugin';
+const defaultRoseNavItems = [
+    { title: 'Home', link: '/', visible: true },
+    { title: 'Collections', link: '/main-categories', visible: true },
+    { title: 'Jamdani Sarees', link: '/category/jamdani', visible: true },
+    { title: 'Lehengas', link: '/category/lehengas', visible: true },
+    { title: 'About Us', link: '#about', visible: true },
+    { title: 'Contact', link: '#contact', visible: true },
+];
 
-function parseHeaderBottomNavItems(value) {
+const parseHeaderNavItems = (value) => {
     if (Array.isArray(value)) return value;
-    if (!value) return [];
+    if (!value) return defaultRoseNavItems;
     try {
         const parsed = JSON.parse(value);
-        return Array.isArray(parsed) ? parsed : [];
+        return Array.isArray(parsed) && parsed.length ? parsed : defaultRoseNavItems;
     } catch {
-        return [];
+        return defaultRoseNavItems;
     }
-}
+};
 
-function normalizeHeaderNavHref(link) {
-    const value = String(link || '').trim();
-    if (!value) return '#';
-    if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('/')) return value;
-    if (value.startsWith('#')) return route('home') + value;
-    return `/${value.replace(/^\/+/, '')}`;
-}
+const getNavMeta = (title = '') => {
+    const lower = String(title || '').toLowerCase();
+    if (lower.includes('home')) {
+        return { icon: Home, badge: null };
+    }
+    if (lower.includes('jamdani')) {
+        return { icon: Sparkles, badge: { text: 'Exclusive', color: 'bg-amber-50 text-amber-700 border-amber-200' } };
+    }
+    if (lower.includes('lehenga')) {
+        return { icon: Flame, badge: { text: 'Trending', color: 'bg-rose-50 text-rose-700 border-rose-200' } };
+    }
+    if (lower.includes('collection') || lower.includes('category') || lower.includes('saree')) {
+        return { icon: Sparkles, badge: { text: 'New', color: 'bg-purple-50 text-purple-700 border-purple-200' } };
+    }
+    if (lower.includes('about')) {
+        return { icon: Info, badge: null };
+    }
+    if (lower.includes('contact')) {
+        return { icon: Phone, badge: null };
+    }
+    return { icon: Tag, badge: null };
+};
+
 export default function ShopLayout({ children, hideMobileBottomNav = false }) {
     const page = usePage();
-    const { auth, flash, global_settings = {}, categories = [], header_categories = [], footer_pages = [] } = page.props;
+    const { auth, flash, global_settings = {} } = page.props;
     const currentUrl = page.url || '/';
     const { cartItems, cartCount, subtotal, removeFromCart, updateQty } = useCart();
     const [menuOpen, setMenuOpen] = useState(false);
-    const [categoriesOpen, setCategoriesOpen] = useState(false);
     const [cartOpen, setCartOpen] = useState(false);
     const [wishlistOpen, setWishlistOpen] = useState(false);
     const [wishlistItems, setWishlistItems] = useState([]);
     const [compareItems, setCompareItems] = useState([]);
-    const [mobileCategory, setMobileCategory] = useState(null);
     const [query, setQuery] = useState('');
     const [suggestions, setSuggestions] = useState([]);
     const [notice, setNotice] = useState(null);
-    const [accountOpen, setAccountOpen] = useState(false);
     const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-    const searchRef = useRef(null);
     const mobileSearchRef = useRef(null);
     const mobileSearchInputRef = useRef(null);
-    const accountRef = useRef(null);
     const headerRef = useRef(null);
 
     useEffect(() => {
@@ -96,63 +143,37 @@ export default function ShopLayout({ children, hideMobileBottomNav = false }) {
         };
     }, []);
 
-    const primaryColor = global_settings.primary_color || global_settings.theme_primary || '#102f58';
-    const storeName = global_settings.theme_name || global_settings.store_name || global_settings.site_title || 'Malamal';
+    const primaryColor = global_settings.primary_color || global_settings.theme_primary || '#e11d48';
+    const storeName = global_settings.theme_name || global_settings.store_name || global_settings.site_title || 'Rose Fashion';
     const logo = global_settings.header_logo_image || global_settings.store_logo || global_settings.logo || '/logo.png';
-    const phone = global_settings.contact_phone || '+880 9638212121';
-    const email = global_settings.contact_email || 'support@example.com';
-    const address = global_settings.store_address_1 || global_settings.contact_address || 'Dhaka, Bangladesh';
+    const phone = global_settings.contact_phone || '+880 1700-000000';
+    const email = global_settings.contact_email || 'support@rosefashionbd.com';
+    const address = global_settings.store_address_1 || global_settings.contact_address || 'Shop #214 (New Market Area), Dhaka New Market, Dhaka-1205, Bangladesh';
     const headerStickySetting = String(global_settings.header_sticky ?? global_settings.header_sticky_status ?? 'true');
     const headerSticky = !['false', '0', 'no', 'disabled'].includes(headerStickySetting.toLowerCase());
-    const headerBgColor = global_settings.header_bg_color || '#f8fafc';
-    const headerTextColor = global_settings.header_text_color || '#0f172a';
-    const headerDesign = global_settings.header_design || 'classic';
-    const isHumanbeingHeader = headerDesign === 'humanbeing';
-    const modernHeaderBgColor = global_settings.header_modern_bg_color || '#08bde3';
-    const modernHeaderTextColor = global_settings.header_modern_text_color || '#ffffff';
-    const headerFontFamily = global_settings.header_font_family || global_settings.font_family || 'Outfit';
-    const headerMenuFontFamily = global_settings.header_bottom_font_family || global_settings.header_menu_font_family || headerFontFamily;
-    const headerLogoText = global_settings.header_logo_text || storeName;
-    const bottomBarBgColor = global_settings.header_bottom_bg_color || '#ffffff';
-    const bottomBarTextColor = global_settings.header_bottom_text_color || '#0f172a';
-    const activeLinkColor = global_settings.header_bottom_active_color || global_settings.header_active_link_color || '#ff4b19';
+
     const mobileBottomNavEnabled = String(global_settings.mobile_bottom_nav_status || 'enabled') !== 'disabled';
-    const mobileBottomNavBgColor = global_settings.mobile_bottom_nav_bg_color || headerBgColor;
-    const mobileBottomNavTextColor = global_settings.mobile_bottom_nav_text_color || headerTextColor || '#ffffff';
-    const mobileBottomNavBadgeBgColor = global_settings.mobile_bottom_nav_badge_bg_color || '#ff4b19';
+    const mobileBottomNavBgColor = global_settings.mobile_bottom_nav_bg_color || '#102f58';
+    const mobileBottomNavTextColor = global_settings.mobile_bottom_nav_text_color || '#ffffff';
+    const mobileBottomNavBadgeBgColor = global_settings.mobile_bottom_nav_badge_bg_color || '#e11d48';
     const mobileBottomNavBadgeTextColor = global_settings.mobile_bottom_nav_badge_text_color || '#ffffff';
     const mobileBottomNavFontWeight = global_settings.mobile_bottom_nav_font_weight || 'semibold';
-    const showMobileHeaderSearch = String(global_settings.mobile_header_search_status || 'disabled') !== 'disabled';
     const showMobileNavHome = String(global_settings.mobile_bottom_nav_show_home || 'true') !== 'false';
     const showMobileNavMenu = String(global_settings.mobile_bottom_nav_show_menu || 'true') !== 'false';
     const showMobileNavCart = String(global_settings.mobile_bottom_nav_show_cart || 'true') !== 'false';
     const showMobileNavCompare = String(global_settings.mobile_bottom_nav_show_compare || 'true') !== 'false';
     const showMobileNavSearch = String(global_settings.mobile_bottom_nav_show_search || 'true') !== 'false';
     const showMobileNavAccount = String(global_settings.mobile_bottom_nav_show_account || 'true') !== 'false';
-    const showHeaderCategoryMenu = String(global_settings.header_show_category_menu ?? 'true') !== 'false';
-    const showHeaderCompare = String(global_settings.header_show_compare ?? 'true') !== 'false';
-    const showHeaderWishlist = String(global_settings.header_show_wishlist ?? 'true') !== 'false';
-    const showHeaderCart = String(global_settings.header_show_cart ?? 'true') !== 'false';
-    const showHeaderQuotation = String(global_settings.header_show_quotation ?? 'true') !== 'false';
-    const showHeaderTrackOrder = String(global_settings.header_modern_show_track_order ?? 'true') !== 'false';
-    const showHeaderSupport = String(global_settings.header_show_support ?? 'true') !== 'false';
-    const showFeaturedCampaigns = String(global_settings.header_featured_show_campaigns ?? 'true') !== 'false';
-    const showFeaturedQuotation = String(global_settings.header_featured_show_quotation ?? 'true') !== 'false';
-    const showFeaturedFlash = String(global_settings.header_featured_show_flash ?? 'true') !== 'false';
-    const headerBottomNavMode = global_settings.header_bottom_nav_mode || 'manual';
-    const footerBgColor = global_settings.footer_bg_color || '#102f58';
-    const footerTextColor = global_settings.footer_text_color || '#ffffff';
-    const footerCopyright = global_settings.footer_copyright || `© ${new Date().getFullYear()} ${storeName}. All rights reserved.`;
-    const footerDbid = global_settings.footer_dbid || '';
-    const footerAbout = global_settings.footer_about || '';
-    const footerPayments = String(global_settings.footer_payments || '').split(',').map((item) => item.trim()).filter(Boolean);
-    const footerSocialLinks = [
-        { label: 'Facebook', href: global_settings.footer_facebook },
-        { label: 'Instagram', href: global_settings.footer_instagram },
-        { label: 'TikTok', href: global_settings.footer_tiktok },
-        { label: 'YouTube', href: global_settings.footer_youtube },
-        { label: 'WhatsApp', href: global_settings.footer_whatsapp },
-    ].filter((item) => item.href && item.href !== '#');
+
+    const facebookUrl = global_settings.footer_facebook || "https://www.facebook.com/share/18Ttrev5mS/";
+    const announcementText = global_settings.announcement_text || "✨ Welcome to Rose Fashion (Dhaka New Market)! Enjoy Nationwide Delivery across Bangladesh.";
+    const announcementLink = global_settings.announcement_link || facebookUrl;
+    const announcementLinkText = global_settings.announcement_link_text || "Message on FB to Order!";
+
+    const navItems = parseHeaderNavItems(global_settings.header_nav_items).filter(item => item.visible !== false);
+    const showSocialButton = String(global_settings.header_show_social_button ?? 'true') !== 'false';
+    const socialButtonText = global_settings.header_social_button_text || 'FB Page';
+    const socialButtonUrl = global_settings.header_social_button_url || facebookUrl;
 
     useEffect(() => {
         const sync = () => setWishlistItems(getWishlistItems());
@@ -170,8 +191,7 @@ export default function ShopLayout({ children, hideMobileBottomNav = false }) {
 
     useEffect(() => {
         const close = (event) => {
-            if (!searchRef.current?.contains(event.target) && !mobileSearchRef.current?.contains(event.target)) setSuggestions([]);
-            if (!accountRef.current?.contains(event.target)) setAccountOpen(false);
+            if (!mobileSearchRef.current?.contains(event.target)) setSuggestions([]);
         };
         document.addEventListener('mousedown', close);
         return () => document.removeEventListener('mousedown', close);
@@ -198,17 +218,20 @@ export default function ShopLayout({ children, hideMobileBottomNav = false }) {
 
     useEffect(() => {
         Tracker.init(global_settings);
-        const unsubscribe = router.on('navigate', () => { setMenuOpen(false); setCategoriesOpen(false); setCartOpen(false); setWishlistOpen(false); setAccountOpen(false); setMobileSearchOpen(false); });
+        const unsubscribe = router.on('navigate', () => { 
+            setMenuOpen(false); 
+            setCartOpen(false); 
+            setWishlistOpen(false); 
+            setMobileSearchOpen(false); 
+        });
         return () => unsubscribe();
     }, [global_settings]);
-
-
-
 
     useEffect(() => {
         if (!mobileSearchOpen) return;
         window.setTimeout(() => mobileSearchInputRef.current?.focus(), 80);
     }, [mobileSearchOpen]);
+
     const submitSearch = (event) => {
         event.preventDefault();
         if (suggestions[0]) {
@@ -216,429 +239,209 @@ export default function ShopLayout({ children, hideMobileBottomNav = false }) {
             router.visit(route('product.show', { slug: suggestions[0].slug }));
         }
     };
+
     const money = (value) => `${global_settings.currency_symbol || '\u09F3'} ${Number(value || 0).toLocaleString('en-BD')}`;
-        const defaultNavItems = [
-        { label: 'Categories', href: route('categories.index'), order: 1 },
-        { label: 'Shop', href: route('shop.index'), order: 2 },
-        { label: 'Promotions/Campaigns', href: route('campaigns.index'), order: 3 },
-        { label: 'Shop By Brands', href: route('brands.index'), order: 4 },
-        { label: 'Quotation Request', href: route('quotation.request'), order: 5 },
-        { label: 'Our Contacts', href: route('home') + '#contact', order: 6 },
-        { label: 'Return Policy', href: route('home') + '#service', order: 7 },
-        { label: 'Terms & Conditions', href: route('home') + '#footer', order: 8 },
-    ];
-    const customNavItems = parseHeaderBottomNavItems(global_settings.header_bottom_nav_items)
-        .filter((item) => item && item.visible !== false && item.title)
-        .sort((a, b) => Number(a.order || 0) - Number(b.order || 0))
-        .map((item) => ({ label: item.title, href: normalizeHeaderNavHref(item.link), order: item.order }));
-    const categoryNavItems = header_categories.map((category, index) => ({
-        label: category.name,
-        href: category.slug ? route('category.show', { slug: category.slug }) : '#',
-        order: index + 1,
-        children: category.children || [],
-    }));
-    const featuredExtraNavItems = [
-        showFeaturedCampaigns ? { label: 'Promotions/Campaigns', href: route('campaigns.index'), order: categoryNavItems.length + 1 } : null,
-        showFeaturedQuotation ? { label: 'Quotation Request', href: route('quotation.request'), order: categoryNavItems.length + 2 } : null,
-        showFeaturedFlash ? { label: 'Flash', href: route('home') + '#flash', order: categoryNavItems.length + 3 } : null,
-    ].filter(Boolean);
-    const navItems = headerBottomNavMode === 'categories'
-        ? [...categoryNavItems, ...featuredExtraNavItems]
-        : (customNavItems.length ? customNavItems : defaultNavItems);
 
-    const isRoseFashionHeader = global_settings.header_design === 'rose_fashion' ||
-        global_settings.theme_name === 'Rose Fashion' ||
-        global_settings.store_name === 'Rose Fashion';
-
-    const facebookUrl = global_settings.footer_facebook || "https://www.facebook.com/share/18Ttrev5mS/";
-    const announcementText = global_settings.announcement_text || "✨ Welcome to Rose Fashion (Dhaka New Market)! Enjoy Nationwide Delivery across Bangladesh.";
-    const announcementLink = global_settings.announcement_link || facebookUrl;
-    const announcementLinkText = global_settings.announcement_link_text || "Message on FB to Order!";
+    const announcementEnabled = String(global_settings.announcement_bar_status || 'enabled') !== 'disabled';
 
     return (
         <div className={`${mobileBottomNavEnabled ? 'pb-20 md:pb-0' : ''} min-h-screen overflow-x-clip bg-slate-50 text-slate-900`}>
             {/* Top Announcement Bar */}
-            <div className="bg-gradient-to-r from-rose-900 via-rose-800 to-rose-900 text-white text-xs sm:text-sm py-2 px-4 text-center font-medium tracking-wide relative z-40">
-                <span>{announcementText} </span>
-                {announcementLink && (
-                    <a
-                        href={announcementLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline ml-2 hover:text-rose-200 transition font-semibold"
-                    >
-                        {announcementLinkText}
-                    </a>
-                )}
-            </div>
+            {announcementEnabled && announcementText && (
+                <div className="bg-gradient-to-r from-rose-900 via-rose-800 to-rose-900 text-white text-xs sm:text-sm py-2 px-4 text-center font-medium tracking-wide relative z-40">
+                    <span>{announcementText} </span>
+                    {announcementLink && (
+                        <a
+                            href={announcementLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline ml-2 hover:text-rose-200 transition font-semibold"
+                        >
+                            {announcementLinkText}
+                        </a>
+                    )}
+                </div>
+            )}
 
-            {isRoseFashionHeader ? (
-                /* Rose Fashion Specific Main Header */
-                <header ref={headerRef} className="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm border-b border-rose-100/60 transition-all duration-300">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex items-center justify-between h-20">
-                            {/* Logo */}
-                            <div className="flex items-center">
-                                <Link href={route('home')} className="group flex items-center">
-                                    <img
-                                        src={logo}
-                                        alt={storeName}
-                                        onError={(e) => {
-                                            if (!e.currentTarget.src.endsWith('/logo.png')) {
-                                                e.currentTarget.src = '/logo.png';
-                                            }
-                                        }}
-                                        className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover shadow-md group-hover:scale-110 transition duration-300"
-                                    />
-                                </Link>
-                            </div>
+            {/* Rose Fashion Header */}
+            <header ref={headerRef} className={`${headerSticky ? 'sticky top-0' : 'relative'} z-50 bg-white/90 backdrop-blur-md shadow-sm border-b border-rose-100/60 transition-all duration-300`}>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-20">
+                        {/* Logo */}
+                        <div className="flex items-center">
+                            <Link href={route('home')} className="group flex items-center">
+                                <img
+                                    src={logo}
+                                    alt={storeName}
+                                    onError={(e) => {
+                                        if (!e.currentTarget.src.endsWith('/logo.png')) {
+                                            e.currentTarget.src = '/logo.png';
+                                        }
+                                    }}
+                                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover shadow-md group-hover:scale-110 transition duration-300"
+                                />
+                            </Link>
+                        </div>
 
-                            {/* Desktop Navigation Links */}
-                            <nav className="hidden lg:flex items-center space-x-8 text-sm font-medium text-slate-700">
-                                <Link href={route('home')} className="text-rose-600 font-semibold hover:text-rose-700 transition">Home</Link>
-                                <a href="#collections" className="hover:text-rose-600 transition">Collections</a>
-                                <a href="#shop-products" className="hover:text-rose-600 transition">Jamdani Sarees</a>
-                                <a href="#shop-products" className="hover:text-rose-600 transition">Lehengas</a>
-                                <a href="#about" className="hover:text-rose-600 transition">About Us</a>
-                                <a href="#contact" className="hover:text-rose-600 transition">Contact</a>
-                            </nav>
+                        {/* Desktop Navigation Links */}
+                        <nav className="hidden lg:flex items-center space-x-8 text-sm font-medium text-slate-700">
+                            {navItems.map((item, index) => {
+                                const isInternal = item.link && item.link.startsWith('/') && !item.link.startsWith('//');
+                                const isHome = item.link === '/' || item.link === route('home');
+                                const activeClass = isHome ? 'text-rose-600 font-semibold hover:text-rose-700' : 'hover:text-rose-600';
 
-                            {/* Actions: Search, Cart & Mobile Menu Toggle */}
-                            <div className="flex items-center space-x-3 sm:space-x-4">
-                                <button
-                                    onClick={() => setMobileSearchOpen(true)}
-                                    className="p-2.5 text-slate-600 hover:text-rose-600 transition rounded-full hover:bg-rose-50 transform hover:scale-110 cursor-pointer"
-                                    title="Search"
-                                >
-                                    <Search className="w-5 h-5" />
-                                </button>
-                                <button
-                                    onClick={() => setCartOpen(true)}
-                                    className="relative p-2.5 text-slate-600 hover:text-rose-600 transition rounded-full hover:bg-rose-50 transform hover:scale-110 cursor-pointer"
-                                    title="Shopping Bag"
-                                >
-                                    <ShoppingBag className="w-5 h-5" />
-                                    <span className="absolute top-0 right-0 w-5 h-5 bg-rose-600 text-white text-[11px] font-bold rounded-full flex items-center justify-center shadow animate-pulse">
-                                        {cartCount}
-                                    </span>
-                                </button>
-                                {/* Facebook Page Quick Button */}
+                                if (isInternal) {
+                                    return (
+                                        <Link
+                                            key={`${item.title}-${index}`}
+                                            href={item.link}
+                                            className={`${activeClass} transition`}
+                                        >
+                                            {item.title}
+                                        </Link>
+                                    );
+                                }
+                                return (
+                                    <a
+                                        key={`${item.title}-${index}`}
+                                        href={item.link}
+                                        className={`${activeClass} transition`}
+                                    >
+                                        {item.title}
+                                    </a>
+                                );
+                            })}
+                        </nav>
+
+                        {/* Actions: Search, Cart & Mobile Menu Toggle */}
+                        <div className="flex items-center space-x-3 sm:space-x-4">
+                            <button
+                                onClick={() => setMobileSearchOpen(true)}
+                                className="p-2.5 text-slate-600 hover:text-rose-600 transition rounded-full hover:bg-rose-50 transform hover:scale-110 cursor-pointer"
+                                title="Search"
+                            >
+                                <Search className="w-5 h-5" />
+                            </button>
+                            <button
+                                onClick={() => setCartOpen(true)}
+                                className="relative p-2.5 text-slate-600 hover:text-rose-600 transition rounded-full hover:bg-rose-50 transform hover:scale-110 cursor-pointer"
+                                title="Shopping Bag"
+                            >
+                                <ShoppingBag className="w-5 h-5" />
+                                <span className="absolute top-0 right-0 w-5 h-5 bg-rose-600 text-white text-[11px] font-bold rounded-full flex items-center justify-center shadow animate-pulse">
+                                    {cartCount}
+                                </span>
+                            </button>
+
+                            {/* Dynamic Social Action Pill Button */}
+                            {showSocialButton && (
                                 <a
-                                    href={facebookUrl}
+                                    href={socialButtonUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="hidden sm:inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-sm hover:shadow-blue-600/30 transition transform hover:-translate-y-0.5"
                                 >
                                     <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                                    <span>FB Page</span>
+                                    <span>{socialButtonText}</span>
                                 </a>
-                                <button
-                                    onClick={() => setMenuOpen(!menuOpen)}
-                                    className="lg:hidden p-2 text-slate-700 hover:text-rose-600 transition cursor-pointer"
-                                    aria-label="Toggle Menu"
-                                >
-                                    {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                                </button>
-                            </div>
+                            )}
+
+                            <button
+                                onClick={() => setMenuOpen(!menuOpen)}
+                                className="lg:hidden p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 transition cursor-pointer active:scale-95"
+                                aria-label="Toggle Menu"
+                            >
+                                {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                            </button>
                         </div>
                     </div>
+                </div>
+            </header>
 
-                    {/* Mobile Menu Dropdown */}
-                    {menuOpen && (
-                        <div className="lg:hidden bg-white border-b border-slate-200 px-6 pt-4 pb-6 space-y-3 shadow-xl">
-                            <Link href={route('home')} onClick={() => setMenuOpen(false)} className="block text-rose-600 font-medium py-1">Home</Link>
-                            <a href="#collections" onClick={() => setMenuOpen(false)} className="block text-slate-700 hover:text-rose-600 font-medium py-1">Collections</a>
-                            <a href="#shop-products" onClick={() => setMenuOpen(false)} className="block text-slate-700 hover:text-rose-600 font-medium py-1">Jamdani Sarees</a>
-                            <a href="#shop-products" onClick={() => setMenuOpen(false)} className="block text-slate-700 hover:text-rose-600 font-medium py-1">Lehengas</a>
-                            <a href="#about" onClick={() => setMenuOpen(false)} className="block text-slate-700 hover:text-rose-600 font-medium py-1">About Us</a>
-                            <a href="#contact" onClick={() => setMenuOpen(false)} className="block text-slate-700 hover:text-rose-600 font-medium py-1">Contact</a>
-                            <div className="pt-2 border-t border-slate-100">
+            <main>{children}</main>
+
+            {/* Rose Fashion Footer */}
+            <footer id="contact" className="bg-slate-950 text-slate-300 pt-16 pb-12 border-t border-slate-800">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-slate-800">
+                        {/* Col 1: Brand Info */}
+                        <div className="space-y-4">
+                            <img
+                                src={logo}
+                                alt={storeName}
+                                onError={(e) => {
+                                    if (!e.currentTarget.src.endsWith('/logo.png')) {
+                                        e.currentTarget.src = '/logo.png';
+                                    }
+                                }}
+                                className="w-14 h-14 rounded-full object-cover shadow-md"
+                            />
+                            <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                                Your premium boutique for Jamdani sarees, bridal lehengas, and designer drapes. Located in the heart of Dhaka New Market.
+                            </p>
+                            <div className="pt-2">
                                 <a
                                     href={facebookUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center justify-center gap-2 bg-blue-600 text-white text-xs font-semibold px-4 py-2.5 rounded-full w-full"
+                                    className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-full transition shadow"
                                 >
-                                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                                    <span>Visit Facebook Page</span>
+                                    <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                    <span>Follow Facebook Page</span>
                                 </a>
                             </div>
                         </div>
-                    )}
-                </header>
-            ) : (
-                /* Classic / Default Header */
-                <header ref={headerRef} className={`${headerSticky ? 'sticky top-0' : 'relative'} z-40 ${isHumanbeingHeader ? 'border-b border-cyan-500/20 shadow-[0_8px_22px_rgba(6,182,212,0.18)]' : 'border-b border-slate-200 shadow-sm backdrop-blur-xl'}`} style={{ fontFamily: headerFontFamily, backgroundColor: isHumanbeingHeader ? modernHeaderBgColor : headerBgColor }}>
-                    <div className={`store-container flex items-center ${isHumanbeingHeader ? 'h-[66px] gap-3 md:h-[78px] md:gap-4 lg:gap-6' : 'h-[74px] gap-2.5 sm:gap-3 lg:gap-3.5 xl:gap-4'}`} style={{ backgroundColor: isHumanbeingHeader ? modernHeaderBgColor : headerBgColor, color: isHumanbeingHeader ? modernHeaderTextColor : headerTextColor }}>
-                        <button onClick={() => setMenuOpen(true)} className={isHumanbeingHeader ? 'grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition hover:bg-white/20 lg:hidden' : 'grid h-10 w-10 shrink-0 place-items-center rounded-full border border-slate-200 lg:hidden'} style={{ color: isHumanbeingHeader ? modernHeaderTextColor : headerTextColor }} aria-label="Open menu"><Menu className={isHumanbeingHeader ? 'h-7 w-7' : 'h-5 w-5'} /></button>
-                        <Link href={route('home')} className={isHumanbeingHeader ? 'flex min-w-0 flex-1 items-center justify-center md:justify-start md:flex-none md:min-w-[210px]' : 'flex min-w-0 flex-1 items-center justify-center md:flex-none md:shrink-0 md:justify-start'}>
-                            {logo ? (
-                                <img
-                                    src={logo}
-                                    alt={storeName}
-                                    className={isHumanbeingHeader ? 'max-h-12 w-auto max-w-[145px] object-contain sm:max-w-[170px] lg:max-w-[220px] mx-auto md:mx-0' : 'max-h-10 sm:max-h-11 md:max-h-12 w-auto max-w-[150px] sm:max-w-[175px] lg:max-w-[200px] xl:max-w-[220px] object-contain mx-auto md:mx-0'}
-                                />
-                            ) : (
-                                <span className="text-xl font-bold tracking-tight text-center md:text-left truncate" style={{ color: isHumanbeingHeader ? modernHeaderTextColor : headerTextColor }}>
-                                    {headerLogoText}
-                                </span>
-                            )}
-                        </Link>
-                        {!isHumanbeingHeader && showHeaderCategoryMenu && <DesktopCategoryMenu categories={header_categories} open={categoriesOpen} setOpen={setCategoriesOpen} primaryColor={primaryColor} />}
-                        <form ref={searchRef} onSubmit={submitSearch} className={isHumanbeingHeader ? "relative hidden min-w-0 flex-[0_1_760px] md:block" : "relative hidden min-w-0 md:flex flex-1"}>
-                            <div className={isHumanbeingHeader ? 'flex h-[44px] overflow-hidden rounded-full bg-white shadow-[0_8px_18px_rgba(8,145,178,0.16)] ring-1 ring-white/25' : 'flex h-[42px] xl:h-[46px] items-center overflow-hidden rounded-full border border-slate-200 bg-white shadow-sm w-full'}>
-                                {!isHumanbeingHeader && <Search className="ml-4 h-4 w-4 text-slate-400 shrink-0" />}
-                                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={isHumanbeingHeader ? 'Search for smartwatches, cotton polos, combos...' : 'Search for products...'} className={isHumanbeingHeader ? 'min-w-0 flex-1 border-0 bg-transparent px-3.5 text-sm font-medium text-slate-700 outline-none ring-0 placeholder:text-slate-400 focus:ring-0' : 'h-full min-w-0 flex-1 border-0 bg-transparent px-3 text-xs xl:text-sm outline-none ring-0 focus:ring-0'} />
-                                <button className={isHumanbeingHeader ? 'm-1 inline-flex items-center gap-1.5 rounded-full bg-[#08bde3] px-5 text-xs font-bold text-white shadow-[0_5px_12px_rgba(8,189,227,0.28)] transition hover:bg-[#06a9cc]' : 'h-full rounded-none px-4 xl:px-6 text-xs xl:text-sm font-bold text-white shrink-0 transition hover:opacity-90'} style={!isHumanbeingHeader ? { backgroundColor: primaryColor } : undefined}>{isHumanbeingHeader && <Search className="h-3.5 w-3.5" />}Search</button>
-                            </div>
-                            <SearchSuggestions suggestions={suggestions} money={money} onSelect={() => setSuggestions([])} />
-                        </form>
-                        <div className={isHumanbeingHeader ? 'ml-auto flex shrink-0 items-center gap-2 md:gap-3' : `flex shrink-0 items-center md:ml-auto w-10 md:w-auto justify-end ${showHeaderQuotation ? 'gap-1.5 sm:gap-2' : 'gap-2 sm:gap-2.5 xl:gap-3'}`}>
-                            {isHumanbeingHeader ? <>
-                                {showHeaderTrackOrder && <Link href={route('track-order')} className="hidden h-10 items-center rounded-full border border-white/25 bg-white/10 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-white/20 xl:flex">Track Order</Link>}
-                                {showHeaderWishlist && <button onClick={() => setWishlistOpen(true)} className="relative grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/10 transition hover:bg-white/20" aria-label="Wishlist"><Heart className="h-7 w-7" strokeWidth={2.1} />{wishlistItems.length ? <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-white px-1 text-[11px] font-black text-[#08bde3]">{wishlistItems.length}</span> : null}</button>}
-                                {showHeaderCart && <button onClick={() => setCartOpen(true)} className="relative grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/10 transition hover:bg-white/20" aria-label="Cart"><ShoppingBag className="h-7 w-7" strokeWidth={2.1} /><span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-white px-1 text-[11px] font-black text-[#08bde3]">{cartCount}</span></button>}
-                                <AccountMenu auth={auth} open={accountOpen} setOpen={setAccountOpen} accountRef={accountRef} variant="humanbeing" primaryColor={primaryColor} />
-                            </> : <>
-                                {showHeaderCompare && <Link href={compareUrl()} className={`hidden h-[40px] xl:h-[42px] items-center gap-1.5 rounded-full border border-slate-200 bg-white ${showHeaderQuotation ? 'px-2.5 xl:px-3.5' : 'px-3 xl:px-4'} text-xs font-bold lg:flex shrink-0`}><GitCompare className="h-3.5 w-3.5 xl:h-4 xl:w-4" />Compare {compareItems.length ? <span className="grid h-5 min-w-5 place-items-center rounded-full bg-[#ff4b19] px-1 text-[10px] text-white">{compareItems.length}</span> : ''}</Link>}
-                                {showHeaderWishlist && <button onClick={() => setWishlistOpen(true)} className={`hidden h-[40px] xl:h-[42px] items-center gap-1.5 rounded-full border border-slate-200 bg-white ${showHeaderQuotation ? 'px-2.5 xl:px-3.5' : 'px-3 xl:px-4'} text-xs font-bold lg:flex shrink-0`}><Heart className="h-3.5 w-3.5 xl:h-4 xl:w-4" />Wishlist {wishlistItems.length ? <span className="grid h-5 min-w-5 place-items-center rounded-full bg-[#ff4b19] px-1 text-[10px] text-white">{wishlistItems.length}</span> : ''}</button>}
-                                {showHeaderCart && (
-                                    <>
-                                        <button
-                                            type="button"
-                                            onClick={() => setCartOpen(true)}
-                                            className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm transition active:scale-95 md:hidden"
-                                            aria-label="Cart"
-                                        >
-                                            <span className="relative grid h-6 w-6 place-items-center">
-                                                <ShoppingCart className="h-5 w-5 text-slate-700" strokeWidth={2.2} />
-                                                {Number(cartCount || 0) > 0 && (
-                                                    <span className="absolute -right-2.5 -top-1.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[#ff4b19] px-1 text-[10px] font-black leading-none text-white shadow-sm ring-2 ring-white">
-                                                        {cartCount > 99 ? '99+' : cartCount}
-                                                    </span>
-                                                )}
-                                            </span>
-                                        </button>
 
-                                        <button
-                                            type="button"
-                                            onClick={() => setCartOpen(true)}
-                                            className={`hidden md:flex h-[40px] xl:h-[42px] items-center gap-1.5 rounded-full border border-slate-200 bg-white ${showHeaderQuotation ? 'px-2.5 sm:px-3 xl:px-3.5' : 'px-3 sm:px-3.5 xl:px-4'} text-xs font-bold shrink-0`}
-                                        >
-                                            <ShoppingCart className="h-3.5 w-3.5 xl:h-4 xl:w-4" />
-                                            <span>Cart</span>
-                                            <span className="grid h-5 min-w-5 place-items-center rounded-full bg-[#ff4b19] px-1 text-[10px] text-white">{cartCount}</span>
-                                        </button>
-                                    </>
-                                )}
-                                {showHeaderQuotation && (
-                                    <Link
-                                        href={route('quotation.request')}
-                                        className="hidden h-[40px] xl:h-[42px] items-center rounded-full px-3.5 xl:px-4 text-xs font-extrabold text-white shadow-sm transition hover:opacity-90 active:scale-95 lg:flex shrink-0 whitespace-nowrap"
-                                        style={{ backgroundColor: primaryColor }}
-                                    >
-                                        Quotation Request
-                                    </Link>
-                                )}
-                                <AccountMenu auth={auth} open={accountOpen} setOpen={setAccountOpen} accountRef={accountRef} primaryColor={primaryColor} />
-                            </>}
+                        {/* Col 2: Quick Links */}
+                        <div>
+                            <h4 className="font-serif text-white font-bold text-base mb-4">Quick Links</h4>
+                            <ul className="space-y-2 text-sm text-slate-400">
+                                <li><Link href={route('home')} className="hover:text-rose-500 transition">Home</Link></li>
+                                <li><a href="#collections" className="hover:text-rose-500 transition">Collections</a></li>
+                                <li><a href="#shop-products" className="hover:text-rose-500 transition">Jamdani Sarees</a></li>
+                                <li><a href="#shop-products" className="hover:text-rose-500 transition">Bridal Lehengas</a></li>
+                                <li><a href="#about" className="hover:text-rose-500 transition">About Us</a></li>
+                            </ul>
+                        </div>
+
+                        {/* Col 3: Categories / Specialities */}
+                        <div>
+                            <h4 className="font-serif text-white font-bold text-base mb-4">Our Specialities</h4>
+                            <ul className="space-y-2 text-sm text-slate-400">
+                                <li><a href="#shop-products" className="hover:text-rose-500 transition">Handloom Jamdani</a></li>
+                                <li><a href="#shop-products" className="hover:text-rose-500 transition">Party Lehengas</a></li>
+                                <li><a href="#shop-products" className="hover:text-rose-500 transition">Katan & Silk Sarees</a></li>
+                            </ul>
+                        </div>
+
+                        {/* Col 4: Contact & Location */}
+                        <div className="space-y-3">
+                            <h4 className="font-serif text-white font-bold text-base mb-4">Store Location</h4>
+                            <p className="text-xs sm:text-sm text-slate-400 flex items-start gap-2">
+                                <MapPin className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
+                                <span>{address || "Shop #214 (New Market Area), Dhaka New Market, Dhaka-1205, Bangladesh"}</span>
+                            </p>
+                            <p className="text-xs sm:text-sm text-slate-400 flex items-center gap-2">
+                                <Phone className="w-4 h-4 text-rose-500 shrink-0" />
+                                <span>{phone || "+880 1700-000000"}</span>
+                            </p>
+                            <p className="text-xs sm:text-sm text-slate-400 flex items-center gap-2">
+                                <Mail className="w-4 h-4 text-rose-500 shrink-0" />
+                                <span>{email || "support@rosefashionbd.com"}</span>
+                            </p>
                         </div>
                     </div>
-                    {showMobileHeaderSearch && !mobileSearchOpen && <div ref={mobileSearchRef} className="store-container relative mb-3 md:hidden">
-                        <form onSubmit={submitSearch} className="flex h-11 overflow-hidden rounded-full border border-slate-200 bg-white" style={{ color: headerTextColor }}><Search className="ml-4 mt-3.5 h-4 w-4 text-slate-400" /><input ref={mobileSearchInputRef} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search products..." className="min-w-0 flex-1 border-0 bg-transparent px-3 text-sm outline-none ring-0 focus:ring-0" /><button className="rounded-none px-5 text-xs font-bold text-white transition hover:opacity-90" style={{ backgroundColor: primaryColor }}>Search</button>{mobileSearchOpen && !showMobileHeaderSearch && <button type="button" onClick={() => { setMobileSearchOpen(false); setSuggestions([]); }} className="grid w-10 place-items-center bg-white text-slate-500" aria-label="Close search"><X className="h-4 w-4" /></button>}</form>
-                        <SearchSuggestions suggestions={suggestions} money={money} onSelect={() => setSuggestions([])} mobile />
-                    </div>}
-                    <nav className="hidden border-t border-slate-200 lg:block" style={{ backgroundColor: bottomBarBgColor, color: bottomBarTextColor, fontFamily: headerMenuFontFamily }}>
-                        <div className="store-container flex min-h-12 items-center gap-7">
-                            {navItems.map((item) => (
-                                <HeaderBottomNavItem
-                                    key={item.label}
-                                    item={item}
-                                    textColor={bottomBarTextColor}
-                                    activeColor={activeLinkColor}
-                                    currentUrl={currentUrl}
-                                />
-                            ))}
-                            {showHeaderSupport && (
-                                <a
-                                    href={`tel:${String(phone || '').replace(/[^0-9+]/g, '')}`}
-                                    className="ml-auto inline-flex items-center gap-2.5 rounded-full px-4 py-1.5 text-xs font-bold text-white shadow-sm transition-all duration-200 hover:opacity-90 hover:shadow active:scale-95 shrink-0"
-                                    style={{ backgroundColor: primaryColor }}
-                                    title={`Call Customer support: ${phone}`}
-                                >
-                                    <div className="grid h-6 w-6 place-items-center rounded-full bg-white/20 text-white shrink-0">
-                                        <Phone className="h-3 w-3 fill-current" />
-                                    </div>
-                                    <div className="text-left leading-tight">
-                                        <span className="block text-[10px] font-semibold text-white/90">Customer support</span>
-                                        {phone && <span className="block text-[11px] font-bold text-white tracking-wide">{phone}</span>}
-                                    </div>
-                                </a>
-                            )}
-                        </div>
-                    </nav>
-                </header>
-            )}
 
-            <main>{children}</main>
-
-            {isRoseFashionHeader ? (
-                /* Rose Fashion Specific Footer */
-                <footer id="contact" className="bg-slate-950 text-slate-300 pt-16 pb-12 border-t border-slate-800">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-slate-800">
-                            {/* Col 1: Brand Info */}
-                            <div className="space-y-4">
-                                    <img
-                                        src={logo}
-                                        alt={storeName}
-                                        onError={(e) => {
-                                            if (!e.currentTarget.src.endsWith('/logo.png')) {
-                                                e.currentTarget.src = '/logo.png';
-                                            }
-                                        }}
-                                        className="w-14 h-14 rounded-full object-cover shadow-md"
-                                    />
-                                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                                    Your premium boutique for Jamdani sarees, bridal lehengas, and designer drapes. Located in the heart of Dhaka New Market.
-                                </p>
-                                <div className="pt-2">
-                                    <a
-                                        href={facebookUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-full transition shadow"
-                                    >
-                                        <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                                        <span>Follow Facebook Page</span>
-                                    </a>
-                                </div>
-                            </div>
-
-                            {/* Col 2: Quick Links */}
-                            <div>
-                                <h4 className="font-serif text-white font-bold text-base mb-4">Quick Links</h4>
-                                <ul className="space-y-2 text-sm text-slate-400">
-                                    <li><Link href={route('home')} className="hover:text-rose-500 transition">Home</Link></li>
-                                    <li><a href="#collections" className="hover:text-rose-500 transition">Collections</a></li>
-                                    <li><a href="#shop-products" className="hover:text-rose-500 transition">Jamdani Sarees</a></li>
-                                    <li><a href="#shop-products" className="hover:text-rose-500 transition">Bridal Lehengas</a></li>
-                                    <li><a href="#about" className="hover:text-rose-500 transition">About Us</a></li>
-                                </ul>
-                            </div>
-
-                            {/* Col 3: Categories / Specialities */}
-                            <div>
-                                <h4 className="font-serif text-white font-bold text-base mb-4">Our Specialities</h4>
-                                <ul className="space-y-2 text-sm text-slate-400">
-                                    <li><a href="#shop-products" className="hover:text-rose-500 transition">Handloom Jamdani</a></li>
-                                    <li><a href="#shop-products" className="hover:text-rose-500 transition">Party Lehengas</a></li>
-                                    <li><a href="#shop-products" className="hover:text-rose-500 transition">Katan & Silk Sarees</a></li>
-                                </ul>
-                            </div>
-
-                            {/* Col 4: Contact & Location */}
-                            <div className="space-y-3">
-                                <h4 className="font-serif text-white font-bold text-base mb-4">Store Location</h4>
-                                <p className="text-xs sm:text-sm text-slate-400 flex items-start gap-2">
-                                    <MapPin className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
-                                    <span>{address || "Shop #214 (New Market Area), Dhaka New Market, Dhaka-1205, Bangladesh"}</span>
-                                </p>
-                                <p className="text-xs sm:text-sm text-slate-400 flex items-center gap-2">
-                                    <Phone className="w-4 h-4 text-rose-500 shrink-0" />
-                                    <span>{phone || "+880 1700-000000"}</span>
-                                </p>
-                                <p className="text-xs sm:text-sm text-slate-400 flex items-center gap-2">
-                                    <Mail className="w-4 h-4 text-rose-500 shrink-0" />
-                                    <span>{email || "support@rosefashionbd.com"}</span>
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Copyright */}
-                        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500">
-                            <p>&copy; 2026 Rose Fashion. All rights reserved. Dhaka New Market.</p>
-                            <div className="flex space-x-6 mt-4 sm:mt-0">
-                                <a href="#" className="hover:text-rose-400 transition">Privacy Policy</a>
-                                <a href="#" className="hover:text-rose-400 transition">Terms of Service</a>
-                            </div>
+                    {/* Copyright */}
+                    <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500">
+                        <p>&copy; {new Date().getFullYear()} {storeName}. All rights reserved. Dhaka New Market.</p>
+                        <div className="flex space-x-6 mt-4 sm:mt-0">
+                            <a href="#" className="hover:text-rose-400 transition">Privacy Policy</a>
+                            <a href="#" className="hover:text-rose-400 transition">Terms of Service</a>
                         </div>
                     </div>
-                </footer>
-            ) : (
-                /* Classic / Default Footer */
-                <footer id="footer" style={{ backgroundColor: footerBgColor, color: footerTextColor }}>
-                    <div id="contact" className="store-container grid items-start gap-8 py-10 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1.25fr] lg:gap-12">
-                        <div>
-                            <h3 className="text-lg font-bold">Registered Office</h3>
-                            {footerAbout && <p className="mt-4 text-sm leading-6 opacity-80">{footerAbout}</p>}
-                            <div className="mt-5 space-y-3 text-sm leading-relaxed opacity-85">
-                                <p className="flex gap-3"><MapPin className="mt-1 h-4 w-4 shrink-0" style={{ color: activeLinkColor }} />{address}</p>
-                                <p className="flex gap-3"><Mail className="h-4 w-4 shrink-0" style={{ color: activeLinkColor }} />{email}</p>
-                                <p className="flex gap-3"><Phone className="h-4 w-4 shrink-0" style={{ color: activeLinkColor }} />{phone}</p>
-                                {footerDbid && <p className="rounded-xl border border-white/10 px-3 py-2 text-xs font-semibold opacity-90">{footerDbid}</p>}
-                            </div>
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-bold">Store Sitemap</h3>
-                            <div className="mt-5 grid max-w-[260px] gap-3 text-sm opacity-85">
-                                {footer_pages.length ? footer_pages.map((page) => <Link key={page.id} href={route('page.show', { slug: page.slug })}>{page.title}</Link>) : <span className="opacity-70">No pages available</span>}
-                            </div>
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-bold">Categories</h3>
-                            <div className="mt-5 grid max-w-[260px] gap-3 text-sm opacity-85">{categories.slice(0, 8).map((category) => <Link key={category.id} href={category.slug ? route('category.show', { slug: category.slug }) : '#'} className="leading-snug transition hover:translate-x-1">{category.name}</Link>)}</div>
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-bold">Customer Care</h3>
-                            <div className="mt-5 max-w-[300px] space-y-3 text-sm opacity-85">
-                                <p>Hotline: {phone}</p>
-                                <p>Sales: {email}</p>
-                                <Link href={route('track-order')} className="block">Track your order</Link>
-                                <button onClick={() => setWishlistOpen(true)}>My Wishlist</button>
-                            </div>
-                            {footerPayments.length > 0 && (
-                                <div className="mt-6">
-                                    <h4 className="text-xs font-black uppercase tracking-[0.2em] opacity-70">Accepted Payments</h4>
-                                    <div className="mt-3 flex flex-wrap gap-2">
-                                        {footerPayments.map((payment) => <span key={payment} className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wide">{payment}</span>)}
-                                    </div>
-                                </div>
-                            )}
-                            {footerSocialLinks.length > 0 && (
-                                <div className="mt-6">
-                                    <h4 className="text-xs font-black uppercase tracking-[0.2em] opacity-70">Follow Us</h4>
-                                    <div className="mt-3 flex flex-wrap gap-2">
-                                        {footerSocialLinks.map((social) => <a key={social.label} href={social.href} target="_blank" rel="noreferrer" className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-bold transition hover:bg-white/20">{social.label}</a>)}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                    <div className="border-t border-white/10">
-                        <div className="store-container flex flex-col justify-between items-center gap-3 py-5 text-xs text-white/70 sm:flex-row">
-                            <p>{footerCopyright}</p>
-                            <a
-                                href="https://zorvyn-meet.netlify.app/"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="group relative inline-flex items-center gap-2 rounded-full border border-white/15 bg-gradient-to-r from-white/[0.08] to-white/[0.02] px-3.5 py-1.5 text-xs shadow-inner shadow-white/5 backdrop-blur-md transition-all duration-300 hover:border-cyan-400/50 hover:bg-white/[0.12] hover:shadow-lg hover:shadow-cyan-500/10 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#102f58]"
-                                title="Visit Zorvyn"
-                            >
-                                <span className="relative flex h-2 w-2">
-                                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75"></span>
-                                    <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-400"></span>
-                                </span>
-                                <span className="text-white/75 transition-colors group-hover:text-white">Made by</span>
-                                <span className="bg-gradient-to-r from-cyan-300 via-sky-200 to-indigo-300 bg-clip-text font-black tracking-wider text-transparent uppercase drop-shadow-xs transition-all group-hover:from-cyan-200 group-hover:via-white group-hover:to-cyan-300">
-                                    zorvyn
-                                </span>
-                                <ArrowUpRight className="h-3.5 w-3.5 text-cyan-400/80 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-cyan-300" />
-                            </a>
-                        </div>
-                    </div>
-                </footer>
-            )}
+                </div>
+            </footer>
 
 
             {mobileSearchOpen && (
@@ -706,9 +509,25 @@ export default function ShopLayout({ children, hideMobileBottomNav = false }) {
                 primaryColor={primaryColor}
             />
 
-            {menuOpen && <MobileMenu categories={header_categories} items={navItems} expanded={mobileCategory} setExpanded={setMobileCategory} onClose={() => setMenuOpen(false)} />}
             {cartOpen && <CartDrawer items={cartItems} subtotal={subtotal} onClose={() => setCartOpen(false)} remove={removeFromCart} update={updateQty} money={money} />}
             {wishlistOpen && <WishlistDrawer items={wishlistItems} onClose={() => setWishlistOpen(false)} onRemove={(id) => { removeWishlistProduct(id); setWishlistItems(getWishlistItems()); }} money={money} />}
+            {menuOpen && (
+                <MobileMenuDrawer
+                    open={menuOpen}
+                    onClose={() => setMenuOpen(false)}
+                    logo={logo}
+                    storeName={storeName}
+                    phone={phone}
+                    address={address}
+                    navItems={navItems}
+                    showSocialButton={showSocialButton}
+                    socialButtonText={socialButtonText}
+                    socialButtonUrl={socialButtonUrl}
+                    cartCount={cartCount}
+                    onCartOpen={() => setCartOpen(true)}
+                    auth={auth}
+                />
+            )}
             {notice && (
                 <div
                     className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[95] flex max-w-sm sm:max-w-md items-center gap-3 rounded-2xl border border-slate-700/70 bg-slate-900/95 p-3.5 sm:p-4 text-white shadow-2xl backdrop-blur-md transition-all duration-300 animate-in fade-in slide-in-from-bottom-5"
@@ -774,71 +593,7 @@ export default function ShopLayout({ children, hideMobileBottomNav = false }) {
     );
 }
 
-function stripHeaderNavUrl(value) {
-    const raw = String(value || '/');
-    try {
-        const parsed = new URL(raw, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
-        return parsed.pathname.replace(/\/+$/, '') || '/';
-    } catch {
-        return raw.split('#')[0].split('?')[0].replace(/\/+$/, '') || '/';
-    }
-}
 
-function isHeaderNavActive(item, currentUrl) {
-    const currentPath = stripHeaderNavUrl(currentUrl);
-    const itemPath = stripHeaderNavUrl(item?.href);
-
-    if (itemPath === '/' && currentPath === '/') return true;
-    if (itemPath !== '/' && (currentPath === itemPath || currentPath.startsWith(`${itemPath}/`))) return true;
-
-    return Array.isArray(item?.children) && item.children.some((child) => {
-        if (!child?.slug) return false;
-        const childPath = stripHeaderNavUrl(route('category.show', { slug: child.slug }));
-        return currentPath === childPath || currentPath.startsWith(`${childPath}/`);
-    });
-}
-
-function HeaderBottomNavItem({ item, textColor, activeColor, currentUrl }) {
-    const hasChildren = Array.isArray(item.children) && item.children.length > 0;
-    const isActive = isHeaderNavActive(item, currentUrl);
-
-    return (
-        <div className="group relative">
-            <Link
-                href={item.href}
-                className="relative flex items-center gap-1.5 py-4 text-xs font-bold transition-colors"
-                style={{ color: isActive ? activeColor : textColor }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = activeColor; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = isActive ? activeColor : textColor; }}
-            >
-                <span className="relative z-10">{item.label}</span>
-                {hasChildren && <ChevronDown className="relative z-10 h-3.5 w-3.5 transition group-hover:rotate-180" />}
-                {isActive && <span className="absolute inset-x-0 bottom-2 h-0.5 rounded-full" style={{ backgroundColor: activeColor }} />}
-            </Link>
-
-            {hasChildren && (
-                <div className="invisible absolute left-0 top-full z-[80] w-64 translate-y-2 rounded-2xl border border-slate-200 bg-white p-2 text-slate-800 opacity-0 shadow-2xl ring-1 ring-slate-950/5 transition-all group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
-                    {item.children.map((child) => {
-                        const childHref = child.slug ? route('category.show', { slug: child.slug }) : '#';
-                        const childActive = stripHeaderNavUrl(currentUrl) === stripHeaderNavUrl(childHref);
-
-                        return (
-                            <Link
-                                key={child.id}
-                                href={childHref}
-                                className="flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold transition hover:bg-slate-50"
-                                style={{ color: childActive ? activeColor : undefined }}
-                            >
-                                <span className="line-clamp-1">{child.name}</span>
-                                <ChevronRight className="h-3.5 w-3.5 text-slate-300" />
-                            </Link>
-                        );
-                    })}
-                </div>
-            )}
-        </div>
-    );
-}
 function suggestionImage(item) {
     return item?.primary_image?.image_path || item?.primaryImage?.image_path || item?.image || item?.image_path || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=120&auto=format&fit=crop&q=60';
 }
@@ -859,7 +614,12 @@ function SearchSuggestions({ suggestions = [], money, onSelect, mobile = false }
                         <img src={suggestionImage(item)} alt={item.name} className="h-16 w-16 shrink-0 rounded-2xl bg-slate-100 object-cover" loading="lazy" />
                         <div className="min-w-0 flex-1">
                             <p className="line-clamp-2 text-sm font-bold leading-snug text-slate-900">{item.name}</p>
-                            <p className="mt-1 text-sm font-extrabold text-[#00aeef]">{money(item.sale_price || item.price).replace(/\s+/g, '')}</p>
+                            <div className="mt-1 flex items-baseline gap-2">
+                                <span className="text-sm font-extrabold text-[#00aeef]">{money(item.sale_price || item.price).replace(/\s+/g, '')}</span>
+                                {item.sale_price && Number(item.sale_price) < Number(item.price) && (
+                                    <span className="text-xs text-slate-400 line-through">{money(item.price).replace(/\s+/g, '')}</span>
+                                )}
+                            </div>
                         </div>
                         <ChevronRight className="h-5 w-5 shrink-0 text-slate-300" strokeWidth={1.8} />
                     </Link>
@@ -882,7 +642,12 @@ function SearchSuggestions({ suggestions = [], money, onSelect, mobile = false }
                         <p className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900">{item.name}</p>
                         {item.sku && <p className="mt-0.5 truncate text-[11px] text-slate-400">SKU: {item.sku}</p>}
                     </div>
-                    <span className="shrink-0 text-sm font-bold text-[#ff4b19]">{money(item.sale_price || item.price)}</span>
+                    <div className="shrink-0 flex items-baseline gap-1.5">
+                        <span className="text-sm font-bold text-[#ff4b19]">{money(item.sale_price || item.price)}</span>
+                        {item.sale_price && Number(item.sale_price) < Number(item.price) && (
+                            <span className="text-xs text-slate-400 line-through">{money(item.price)}</span>
+                        )}
+                    </div>
                 </Link>
             ))}
         </div>
@@ -904,79 +669,7 @@ function userInitials(user) {
     return raw.slice(0, 2).toUpperCase();
 }
 
-function AccountMenu({ auth, open, setOpen, accountRef, variant = 'classic', primaryColor = '#102f58' }) {
-    const user = auth?.user;
-    const isHumanbeing = variant === 'humanbeing';
 
-    if (!user) {
-        return (
-            <Link
-                href={route('login')}
-                className={isHumanbeing ? 'grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/10 transition hover:bg-white/20 shrink-0' : 'hidden h-[40px] xl:h-[42px] items-center gap-2 rounded-full px-3.5 xl:px-4 text-xs font-bold text-white shadow-sm transition hover:opacity-90 md:flex shrink-0 whitespace-nowrap'}
-                style={!isHumanbeing ? { backgroundColor: primaryColor } : undefined}
-                aria-label="Sign in"
-            >
-                <User className={isHumanbeing ? 'h-7 w-7' : 'h-4 w-4'} />
-                {!isHumanbeing && <span className="hidden xl:inline">Sign in</span>}
-            </Link>
-        );
-    }
-
-    const dashboardRoute = user.role === 'admin' ? 'admin.dashboard' : 'customer.dashboard';
-    const avatar = userAvatar(user);
-    const displayName = user.name || 'Account';
-
-    return (
-        <div ref={accountRef} className={isHumanbeing ? 'relative block shrink-0' : 'relative hidden md:block shrink-0'}>
-            <button
-                type="button"
-                onClick={() => setOpen(!open)}
-                className={isHumanbeing 
-                    ? 'grid h-11 w-11 place-items-center overflow-hidden rounded-full bg-white/10 text-white ring-1 ring-white/10 transition hover:bg-white/20 shrink-0' 
-                    : 'grid h-[40px] w-[40px] xl:h-[42px] xl:w-[42px] place-items-center overflow-hidden rounded-full text-white shadow-sm transition hover:opacity-90 shrink-0'}
-                style={!isHumanbeing ? { backgroundColor: primaryColor } : undefined}
-                aria-expanded={open}
-                aria-haspopup="menu"
-                aria-label="Account menu"
-                title={displayName}
-            >
-                {avatar ? (
-                    <img src={avatar} alt={displayName} className="h-full w-full object-cover" />
-                ) : (
-                    <span className="text-xs font-black tracking-wider">{userInitials(user)}</span>
-                )}
-            </button>
-
-            {open && (
-                <div className="absolute right-0 top-[52px] z-[90] w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-800 shadow-2xl ring-1 ring-slate-950/5" role="menu">
-                    <div className="flex items-center gap-3 border-b border-slate-100 bg-slate-50 px-4 py-3">
-                        <span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-full text-white shadow-sm" style={{ backgroundColor: primaryColor }}>
-                            {avatar ? <img src={avatar} alt={displayName} className="h-full w-full object-cover" /> : <span className="text-sm font-black">{userInitials(user)}</span>}
-                        </span>
-                        <div className="min-w-0">
-                            <p className="truncate text-sm font-black text-slate-900">{displayName}</p>
-                            {user.email && <p className="truncate text-xs font-medium text-slate-500">{user.email}</p>}
-                        </div>
-                    </div>
-                    <div className="p-2">
-                        <Link href={route(dashboardRoute)} className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold transition hover:bg-slate-50" role="menuitem">
-                            <LayoutDashboard className="h-4 w-4 text-slate-500" />
-                            My Dashboard
-                        </Link>
-                        <Link href={route('profile.edit')} className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold transition hover:bg-slate-50" role="menuitem">
-                            <Settings className="h-4 w-4 text-slate-500" />
-                            Profile Settings
-                        </Link>
-                        <Link href={route('logout')} method="post" as="button" className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-bold text-red-600 transition hover:bg-red-50" role="menuitem">
-                            <LogOut className="h-4 w-4" />
-                            Logout
-                        </Link>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-}
 function MobileBottomNavigation({ auth, cartCount, compareCount, compareHref, enabled = true, bgColor = '#102f58', textColor = '#ffffff', badgeBgColor = '#ff4b19', badgeTextColor = '#ffffff', fontWeight = 'semibold', showHome = true, showMenu = true, showCart = true, showCompare = true, showSearch = true, showAccount = true, onCartOpen, onMenuOpen, onSearchOpen, primaryColor = '#102f58' }) {
     const [accountOpen, setAccountOpen] = useState(false);
     const user = auth?.user;
@@ -1062,76 +755,230 @@ function MobileBottomNavigation({ auth, cartCount, compareCount, compareHref, en
         </>
     );
 }
-function DesktopCategoryMenu({ categories, open, setOpen, primaryColor = '#102f58' }) {
-    const [hoveredCategoryId, setHoveredCategoryId] = useState(null);
-    const hoveredCategory = categories.find((category) => category.id === hoveredCategoryId);
-    const hasSubcategories = hoveredCategory?.children?.length > 0;
 
-    const closeMenu = () => {
-        setOpen(false);
-        setHoveredCategoryId(null);
-    };
+function MobileMenuDrawer({ 
+    open, 
+    onClose, 
+    logo, 
+    storeName, 
+    phone, 
+    address, 
+    navItems, 
+    showSocialButton, 
+    socialButtonText, 
+    socialButtonUrl, 
+    cartCount, 
+    onCartOpen, 
+    auth 
+}) {
+    if (!open) return null;
 
     return (
-        <div className="relative hidden shrink-0 lg:block" onMouseEnter={() => setOpen(true)} onMouseLeave={closeMenu}>
-            <button
-                type="button"
-                onClick={() => setOpen(!open)}
-                className="flex h-[42px] xl:h-[46px] items-center gap-1.5 xl:gap-2 rounded-full px-3.5 xl:px-5 text-xs xl:text-sm font-bold text-white whitespace-nowrap transition hover:opacity-90"
-                style={{ backgroundColor: primaryColor }}
-                aria-haspopup="menu"
-                aria-expanded={open}
-            >
-                <Menu className="h-4 w-4" />
-                Categories
-                <ChevronDown className={`h-4 w-4 transition ${open ? 'rotate-180' : ''}`} />
-            </button>
+        <div className="fixed inset-0 z-[100] lg:hidden flex">
+            {/* Dark Backdrop */}
+            <div 
+                className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+                onClick={onClose}
+                aria-hidden="true"
+            />
 
-            {open && (
-                <div className="absolute left-0 top-full z-50 flex items-stretch pt-2" role="menu">
-                    <div className={`w-72 border border-slate-200 bg-white py-2 shadow-2xl ${hasSubcategories ? 'rounded-l-2xl' : 'rounded-2xl'}`}>
-                        {categories.length > 0 ? categories.map((category) => {
-                            const active = hoveredCategoryId === category.id;
-                            const childrenCount = category.children?.length || 0;
-                            return (
-                                <div key={category.id} onMouseEnter={() => setHoveredCategoryId(category.id)} onFocus={() => setHoveredCategoryId(category.id)}>
-                                    <Link
-                                        href={category.slug ? route('category.show', { slug: category.slug }) : '#'}
-                                        className={`flex min-h-11 items-center justify-between gap-3 px-5 py-3 text-sm font-semibold transition ${active ? 'bg-slate-50 text-[#ff4b19]' : 'text-slate-800 hover:bg-slate-50 hover:text-[#ff4b19]'}`}
-                                    >
-                                        <span className="min-w-0 flex-1 truncate">{category.name}</span>
-                                        {childrenCount > 0 && <ChevronRight className={`h-4 w-4 shrink-0 transition ${active ? 'translate-x-0.5 text-[#ff4b19]' : 'text-slate-400'}`} />}
-                                    </Link>
-                                </div>
-                            );
-                        }) : <p className="px-5 py-4 text-sm text-slate-500">No featured categories</p>}
+            {/* Solid Drawer Panel */}
+            <div 
+                className="relative w-[85vw] max-w-[320px] h-[100dvh] bg-white flex flex-col shadow-2xl z-10 animate-in slide-in-from-left duration-250"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* Compact Branded Header */}
+                <div className="bg-gradient-to-r from-rose-950 via-rose-900 to-rose-950 text-white px-4 py-3 flex items-center justify-between border-b border-rose-800/40 shrink-0">
+                    <div className="flex items-center gap-2.5">
+                        <img
+                            src={logo}
+                            alt={storeName}
+                            onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = '/logo.png';
+                            }}
+                            className="w-9 h-9 rounded-full object-cover bg-white ring-2 ring-rose-400/50 shadow-sm"
+                        />
+                        <div>
+                            <h3 className="text-sm font-black tracking-tight text-white leading-tight flex items-center gap-1">
+                                {storeName}
+                                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                            </h3>
+                            <p className="text-[10px] text-rose-200/90 font-medium">
+                                Dhaka New Market
+                            </p>
+                        </div>
                     </div>
 
-                    {hasSubcategories && (
-                        <div className="flex w-80 flex-col rounded-r-2xl border border-l-0 border-slate-200 bg-white p-5 shadow-2xl">
-                            <p className="text-[9px] font-extrabold uppercase tracking-[0.22em] text-[#ff4b19]">Sub categories</p>
-                            <h3 className="mt-1.5 text-base font-extrabold text-[#102f58]">{hoveredCategory.name}</h3>
-                            <div className="mt-3 max-h-72 space-y-1 overflow-y-auto pr-1">
-                                {hoveredCategory.children.map((child) => (
-                                    <Link key={child.id} href={child.slug ? route('category.show', { slug: child.slug }) : '#'} className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-[#fff4f0] hover:text-[#ff4b19]">
-                                        <span className="min-w-0 flex-1 truncate">{child.name}</span>
-                                        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-300" />
-                                    </Link>
-                                ))}
-                            </div>
-                            <Link href={hoveredCategory?.slug ? route('category.show', { slug: hoveredCategory.slug }) : '#'} className="mt-auto flex items-center gap-2 border-t border-slate-100 pt-4 text-xs font-bold text-[#102f58] hover:text-[#ff4b19]">
-                                View all in {hoveredCategory.name} <ChevronRight className="h-3.5 w-3.5" />
-                            </Link>
-                        </div>
-                    )}
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-rose-100 flex items-center justify-center transition active:scale-90"
+                        aria-label="Close menu"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
                 </div>
-            )}
+
+                {/* Quick Info Bar */}
+                <div className="bg-rose-50/70 border-b border-rose-100/80 px-4 py-1.5 flex items-center justify-between text-xs shrink-0">
+                    <a href={`tel:${phone}`} className="flex items-center gap-1.5 font-bold text-rose-700 hover:text-rose-800">
+                        <Phone className="w-3.5 h-3.5" />
+                        <span>{phone}</span>
+                    </a>
+                    <button 
+                        type="button" 
+                        onClick={() => { onClose(); onCartOpen(); }}
+                        className="flex items-center gap-1 font-bold text-slate-700 hover:text-rose-600"
+                    >
+                        <ShoppingBag className="w-3.5 h-3.5 text-rose-600" />
+                        <span>Bag ({cartCount})</span>
+                    </button>
+                </div>
+
+                {/* Main Scrollable Area */}
+                <div className="flex-1 overflow-y-auto px-3.5 py-3 space-y-4">
+                    
+                    {/* Navigation Menu Links */}
+                    <div>
+                        <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-1 mb-2">
+                            Menu Navigation
+                        </p>
+                        <nav className="space-y-1">
+                            {navItems.map((item, index) => {
+                                const isInternal = item.link && item.link.startsWith('/') && !item.link.startsWith('//');
+                                const isHome = item.link === '/' || item.link === route('home');
+                                const meta = getNavMeta(item.title);
+                                const IconComp = meta.icon;
+
+                                const content = (
+                                    <>
+                                        <div className="flex items-center gap-2.5 min-w-0">
+                                            <span className={`w-8 h-8 rounded-xl flex items-center justify-center transition ${
+                                                isHome ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-600 group-hover:bg-rose-100 group-hover:text-rose-700'
+                                            }`}>
+                                                <IconComp className="w-4 h-4" />
+                                            </span>
+                                            <span className={`text-[13px] font-bold truncate ${
+                                                isHome ? 'text-rose-700 font-extrabold' : 'text-slate-800 group-hover:text-rose-700'
+                                            }`}>
+                                                {item.title}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex items-center gap-1.5 shrink-0">
+                                            {meta.badge && (
+                                                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${meta.badge.color}`}>
+                                                    {meta.badge.text}
+                                                </span>
+                                            )}
+                                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-rose-500 group-hover:translate-x-0.5 transition-transform" />
+                                        </div>
+                                    </>
+                                );
+
+                                if (isInternal) {
+                                    return (
+                                        <Link
+                                            key={`m-${item.title}-${index}`}
+                                            href={item.link}
+                                            onClick={onClose}
+                                            className={`group flex items-center justify-between p-2 rounded-xl transition ${
+                                                isHome ? 'bg-rose-50 border border-rose-200/80 shadow-xs' : 'hover:bg-slate-50'
+                                            }`}
+                                        >
+                                            {content}
+                                        </Link>
+                                    );
+                                }
+
+                                return (
+                                    <a
+                                        key={`m-${item.title}-${index}`}
+                                        href={item.link}
+                                        onClick={onClose}
+                                        className="group flex items-center justify-between p-2 rounded-xl transition hover:bg-slate-50"
+                                    >
+                                        {content}
+                                    </a>
+                                );
+                            })}
+                        </nav>
+                    </div>
+
+                    {/* Popular Categories Chips */}
+                    <div className="pt-3 border-t border-slate-100">
+                        <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-1 mb-2 flex items-center justify-between">
+                            <span>Top Categories</span>
+                            <Sparkles className="w-3 h-3 text-rose-500" />
+                        </p>
+                        <div className="flex flex-wrap gap-1.5 px-0.5">
+                            {[
+                                { label: 'Jamdani Sarees', link: '/category/jamdani' },
+                                { label: 'Bridal Lehengas', link: '/category/lehengas' },
+                                { label: 'Designer Sarees', link: '/category/designer-sarees' },
+                                { label: 'All Collections', link: '/main-categories' },
+                            ].map((chip, idx) => (
+                                <Link
+                                    key={idx}
+                                    href={chip.link}
+                                    onClick={onClose}
+                                    className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 hover:bg-rose-100 text-slate-700 hover:text-rose-700 transition"
+                                >
+                                    {chip.label}
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Showroom & Delivery Trust Card */}
+                    <div className="rounded-xl bg-slate-50 p-2.5 border border-slate-200/80 space-y-1.5 text-slate-700">
+                        <div className="flex items-start gap-2">
+                            <MapPin className="w-3.5 h-3.5 text-rose-600 shrink-0 mt-0.5" />
+                            <p className="text-[11px] font-medium leading-snug">
+                                {address}
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-3 pt-1 text-[10px] font-bold text-slate-500">
+                            <span className="flex items-center gap-1 text-emerald-700">
+                                <Truck className="w-3 h-3" /> Cash on Delivery
+                            </span>
+                            <span className="flex items-center gap-1 text-rose-700">
+                                <ShieldCheck className="w-3 h-3" /> Authentic Quality
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+
+                {/* Sticky Footer of Drawer */}
+                <div className="p-3 border-t border-slate-100 bg-white space-y-2 shrink-0">
+                    {showSocialButton && (
+                        <a
+                            href={socialButtonUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-xs transition active:scale-98 w-full"
+                        >
+                            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                            <span>{socialButtonText}</span>
+                        </a>
+                    )}
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 px-1">
+                        <span>📞 {phone}</span>
+                        <Link
+                            href={auth?.user ? route('customer.dashboard') : route('login')}
+                            onClick={onClose}
+                            className="text-rose-600 font-bold hover:underline"
+                        >
+                            {auth?.user ? 'My Account' : 'Customer Login'}
+                        </Link>
+                    </div>
+                </div>
+
+            </div>
         </div>
     );
-}
-
-function MobileMenu({ categories, items, expanded, setExpanded, onClose }) {
-    return <div className="fixed inset-0 z-[70] bg-slate-950/60 backdrop-blur-sm" onClick={onClose}><aside className="h-full w-[88%] max-w-sm overflow-y-auto bg-white p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}><div className="flex items-center justify-between border-b pb-4"><strong className="text-lg text-[#102f58]">Menu</strong><button onClick={onClose} className="rounded-full bg-slate-100 p-2"><X className="h-5 w-5" /></button></div><div className="py-3">{items.map((item) => <Link key={item.label} href={item.href} onClick={onClose} className="block border-b py-3 text-sm font-bold">{item.label}</Link>)}</div><h3 className="mt-4 text-xs font-extrabold uppercase text-slate-500">Browse categories</h3>{categories.map((category) => <div key={category.id} className="border-b"><div className="flex items-center"><Link href={category.slug ? route('category.show', { slug: category.slug }) : '#'} className="flex-1 py-3 text-sm font-semibold">{category.name}</Link>{category.children?.length > 0 && <button onClick={() => setExpanded(expanded === category.id ? null : category.id)} className="p-3"><ChevronDown className="h-4 w-4" /></button>}</div>{expanded === category.id && category.children?.map((child) => <Link key={child.id} href={child.slug ? route('category.show', { slug: child.slug }) : '#'} className="block py-2 pl-4 text-sm text-slate-500">{child.name}</Link>)}</div>)}</aside></div>;
 }
 
 function CartDrawer({ items, subtotal, onClose, remove, update, money }) {

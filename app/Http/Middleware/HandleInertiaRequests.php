@@ -69,14 +69,6 @@ class HandleInertiaRequests extends Middleware
                 }])
                 ->orderBy('order_index')
                 ->get(),
-            'header_categories' => fn () => Category::whereNull('parent_id')
-                ->where('is_active', true)
-                ->where('is_featured', true)
-                ->with(['children' => function ($query) {
-                    $query->where('is_active', true)->orderBy('order_index');
-                }])
-                ->orderBy('order_index')
-                ->get(),
             'footer_pages' => fn () => Schema::hasTable('pages')
                 ? Page::where('status', 'active')
                     ->where('show_in_footer', true)

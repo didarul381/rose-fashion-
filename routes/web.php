@@ -39,6 +39,9 @@ Route::get('/shop-by-brands', [ShopController::class, 'brands'])->name('brands.i
 Route::get('/shop', [ShopController::class, 'shop'])->name('shop.index');
 Route::get('/compare', [ShopController::class, 'compare'])->name('compare.index');
 Route::get('/category/{slug}', [ShopController::class, 'category'])->name('category.show');
+Route::redirect('/collections', '/main-categories');
+Route::redirect('/jamdani', '/category/jamdani');
+Route::redirect('/lehengas', '/category/lehengas');
 Route::get('/product/{slug}', [ShopController::class, 'product'])->name('product.show');
 Route::get('/page/{slug}', [ShopController::class, 'page'])->name('page.show');
 Route::get('/api/search', [ShopController::class, 'search'])->name('api.search');
