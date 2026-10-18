@@ -3,6 +3,7 @@ import { Link, usePage } from '@inertiajs/react';
 import { X, Star, Heart, ShoppingBag, Check, Share2, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import WhatsAppIcon from './WhatsAppIcon';
 import { getWishlistItems, toggleWishlistProduct } from '../Services/Wishlist';
+import { useCart } from '../Contexts/CartContext';
 
 function stripHtml(value = '') {
     return String(value || '')
@@ -16,6 +17,7 @@ function stripHtml(value = '') {
 export default function QuickViewModal({ product, isOpen, onClose, onAddToCart, settings = {} }) {
     if (!isOpen || !product) return null;
 
+    const cartCtx = useCart();
     const pageProps = usePage()?.props || {};
     const globalSettings = { ...pageProps.global_settings, ...settings };
     const primaryColor = globalSettings.card_button_bg_color || globalSettings.primary_color || '#e11d48';
@@ -200,7 +202,11 @@ export default function QuickViewModal({ product, isOpen, onClose, onAddToCart, 
 
     const handleAddToCartClick = () => {
         if (isOutOfStock) return;
-        onAddToCart?.(product, selectedVariant, quantity);
+        if (typeof onAddToCart === 'function') {
+            onAddToCart(product, selectedVariant, quantity);
+        } else if (cartCtx?.addToCart) {
+            cartCtx.addToCart(product, selectedVariant, quantity);
+        }
         onClose();
     };
 
@@ -440,7 +446,7 @@ export default function QuickViewModal({ product, isOpen, onClose, onAddToCart, 
                                         <span className="text-[11px] font-bold">f</span>
                                     </a>
                                     <a
-                                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent(product.name + ' ' + productUrl)}`}
+                                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`${product.name}${selectedVariant?.title || selectedVariant?.name ? ` (${selectedVariant.title || selectedVariant.name})` : ''} - ৳${Number(currentPrice || 0).toLocaleString()}\n${productUrl}`)}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center hover:opacity-90 transition"

@@ -82,7 +82,7 @@ export default function ShopLayout({ children, hideMobileBottomNav = false }) {
     const page = usePage();
     const { auth, flash, global_settings = {} } = page.props;
     const currentUrl = page.url || '/';
-    const { cartItems, cartCount, subtotal, removeFromCart, updateQty } = useCart();
+    const { cartItems, cartCount, subtotal, addToCart, removeFromCart, updateQty } = useCart();
     const [menuOpen, setMenuOpen] = useState(false);
     const [cartOpen, setCartOpen] = useState(false);
     const [wishlistOpen, setWishlistOpen] = useState(false);
