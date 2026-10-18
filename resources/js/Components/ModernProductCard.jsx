@@ -32,11 +32,99 @@ export default function ModernProductCard({ product, onAddToCart, settings = {} 
     const [wishlisted, setWishlisted] = useState(false);
     const [compared, setCompared] = useState(false);
     const hasVariants = (product.type === 'variable' || product.type === 'option') && product.variants?.length > 0;
-    const hasAvailableVariant = hasVariants
-        ? product.variants.some(variant => Number(variant.stock || 0) > 0)
-        : true;
+
+    const attributesList = React.useMemo(() => {
+        if (!hasVariants) return [];
+        const attrs = {};
+        product.variants.forEach(variant => {
+            const valuesArr = variant.attribute_values || variant.attributeValues || [];
+            valuesArr.forEach(av => {
+                const attrName = av.attribute?.name || av.attribute?.code;
+                if (attrName) {
+                    if (!attrs[attrName]) attrs[attrName] = [];
+                    if (!attrs[attrName].includes(av.value)) attrs[attrName].push(av.value);
+                }
+            });
+            if (variant.attributes && typeof variant.attributes === 'object') {
+                Object.entries(variant.attributes).forEach(([k, v]) => {
+                    if (!attrs[k]) attrs[k] = [];
+                    if (!attrs[k].includes(v)) attrs[k].push(v);
+                });
+            }
+        });
+
+        if (Object.keys(attrs).length === 0 && product.variants.length > 0) {
+            const variantNames = product.variants.map(v => v.title || v.name).filter(Boolean);
+            if (variantNames.length > 0) {
+                attrs['Option'] = Array.from(new Set(variantNames));
+            }
+        }
+
+        return Object.keys(attrs).map(name => ({
+            name,
+            values: attrs[name]
+        }));
+    }, [product, hasVariants]);
+
+    const matchesVariant = (variant, opts) => {
+        const valuesArr = variant.attribute_values || variant.attributeValues || [];
+        const variantOpts = valuesArr.reduce((acc, av) => {
+            const attrName = av.attribute?.name || av.attribute?.code;
+            if (attrName) acc[attrName] = av.value;
+            return acc;
+        }, {});
+        if (variant.attributes && typeof variant.attributes === 'object') {
+            Object.assign(variantOpts, variant.attributes);
+        }
+        if (variant.title || variant.name) {
+            variantOpts['Option'] = variant.title || variant.name;
+        }
+        return Object.entries(opts).every(([k, v]) => variantOpts[k] === v);
+    };
+
+    const [selectedOptions, setSelectedOptions] = useState(() => {
+        if (!hasVariants) return {};
+        const initial = {};
+        const firstVariant = product.variants.find(v => Number(v.stock || 0) > 0) || product.variants[0];
+        if (firstVariant) {
+            const valuesArr = firstVariant.attribute_values || firstVariant.attributeValues || [];
+            valuesArr.forEach(av => {
+                const attrName = av.attribute?.name || av.attribute?.code;
+                if (attrName) initial[attrName] = av.value;
+            });
+            if (firstVariant.attributes && typeof firstVariant.attributes === 'object') {
+                Object.entries(firstVariant.attributes).forEach(([k, v]) => {
+                    if (!initial[k]) initial[k] = v;
+                });
+            }
+            if (Object.keys(initial).length === 0 && (firstVariant.title || firstVariant.name)) {
+                initial['Option'] = firstVariant.title || firstVariant.name;
+            }
+        }
+        return initial;
+    });
+
+    const selectedVariant = React.useMemo(() => {
+        if (!hasVariants) return null;
+        return product.variants.find(v => matchesVariant(v, selectedOptions)) || null;
+    }, [hasVariants, product.variants, selectedOptions]);
+
+    const handleOptionSelect = (attrName, val) => {
+        setSelectedOptions(prev => ({
+            ...prev,
+            [attrName]: val
+        }));
+    };
+
+    const isOptionOutOfStock = (attrName, val) => {
+        if (!hasVariants) return false;
+        const testOpts = { ...selectedOptions, [attrName]: val };
+        const matched = product.variants.find(v => matchesVariant(v, testOpts));
+        return matched ? Number(matched.stock || 0) <= 0 : true;
+    };
+
     const isOutOfStock = hasVariants
-        ? !hasAvailableVariant
+        ? (selectedVariant ? Number(selectedVariant.stock || 0) <= 0 : !product.variants.some(v => Number(v.stock || 0) > 0))
         : product.stock <= 0 && product.type !== 'digital';
 
     const cardRadius = radiusMap[settings.card_radius] || 'rounded-2xl';
@@ -88,10 +176,12 @@ export default function ModernProductCard({ product, onAddToCart, settings = {} 
     const cardBorderColor = settings.card_border_color || '#e2e8f0';
     const ratingColor = settings.card_rating_color || '#ff4b19';
 
-    const originalPrice = parseFloat(product.price || 0);
-    const salePrice = parseFloat(product.sale_price || product.price || 0);
+    const originalPrice = parseFloat(selectedVariant?.price || product.price || 0);
+    const salePrice = parseFloat(selectedVariant ? (selectedVariant.sale_price || selectedVariant.price) : (product.sale_price || product.price || 0));
     const priceUnit = product.price_unit?.code || product.priceUnit?.code || 'pcs';
-    const hasSale = !!product.sale_price && salePrice < originalPrice;
+    const hasSale = selectedVariant
+        ? (selectedVariant.sale_price && parseFloat(selectedVariant.price) > parseFloat(selectedVariant.sale_price))
+        : (!!product.sale_price && salePrice < originalPrice);
     const discountPercent = hasSale && originalPrice > 0
         ? Math.round(((originalPrice - salePrice) / originalPrice) * 100)
         : 0;
@@ -103,11 +193,11 @@ export default function ModernProductCard({ product, onAddToCart, settings = {} 
         : 0;
 
     const brandLabel = product.brand || product.categories?.[0]?.name || 'Catalog';
-    const skuLabel = product.sku || `G-${product.id}`;
+    const skuLabel = selectedVariant?.sku || product.sku || `G-${product.id}`;
     const stockQty = hasVariants
-        ? product.variants.reduce((sum, variant) => sum + Number(variant.stock || 0), 0)
+        ? (selectedVariant ? Number(selectedVariant.stock || 0) : product.variants.reduce((sum, variant) => sum + Number(variant.stock || 0), 0))
         : Number(product.stock || 0);
-    const productImage = product.primary_image?.image_path || product.images?.[0]?.image_path || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500';
+    const productImage = (selectedVariant?.image_path) || product.primary_image?.image_path || product.images?.[0]?.image_path || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500';
 
     const handleWishlistClick = (e) => {
         e.preventDefault();
@@ -161,24 +251,22 @@ export default function ModernProductCard({ product, onAddToCart, settings = {} 
 
     const commonBtnStyle = `flex h-9 w-full items-center justify-center gap-1.5 px-3 text-[10.5px] font-semibold tracking-tight transition-all shadow-[0_6px_14px_rgba(15,23,42,0.10)] hover:shadow-md md:h-10 md:gap-2 md:text-[12px] md:font-bold ${buttonRadiusClass} ${buttonHoverClass} ${buttonAnimClass}`;
 
-    const primaryAction = hasVariants ? (
-        <Link
-            href={route('product.show', { slug: product.slug })}
-            className={commonBtnStyle}
-            style={{ backgroundColor: isOutOfStock ? '#cbd5e1' : buttonSelectOptionBg, color: isOutOfStock ? '#ffffff' : buttonSelectOptionText }}
+    const primaryAction = isOutOfStock ? (
+        <button
+            disabled
+            className={`${commonBtnStyle} cursor-not-allowed bg-slate-200 text-slate-400`}
         >
             <ShoppingCart className="h-3.5 w-3.5 shrink-0 md:h-4 md:w-4" strokeWidth={2.1} />
-            {isOutOfStock ? 'Out of stock' : 'Select options'}
-        </Link>
+            <span>Out of stock</span>
+        </button>
     ) : (
         <button
-            onClick={() => !isOutOfStock && onAddToCart?.(product, null, 1)}
-            disabled={isOutOfStock}
-            className={`${commonBtnStyle} disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-white`}
-            style={!isOutOfStock ? { backgroundColor: buttonPrimaryBg, color: buttonPrimaryText } : undefined}
+            onClick={() => onAddToCart?.(product, selectedVariant, 1)}
+            className={`${commonBtnStyle}`}
+            style={{ backgroundColor: buttonPrimaryBg, color: buttonPrimaryText }}
         >
             <ShoppingCart className="h-3.5 w-3.5 shrink-0 md:h-4 md:w-4" strokeWidth={2.1} />
-            {showActionText ? (isOutOfStock ? 'Out of stock' : 'Add to cart') : ''}
+            {showActionText ? 'Add to cart' : ''}
         </button>
     );
 
@@ -280,6 +368,48 @@ export default function ModernProductCard({ product, onAddToCart, settings = {} 
                     <div className="mt-3 flex justify-between gap-2 text-[10px]" style={{ color: textColor, opacity: 0.82 }}>
                         {showStock && <span>{isOutOfStock ? 'Out of stock' : `${stockQty} In stock`}</span>}
                         {showCatalog && <span>In catalog</span>}
+                    </div>
+                )}
+
+                {hasVariants && attributesList.length > 0 && (
+                    <div className="mt-2.5 pt-2 border-t border-slate-100 flex flex-col gap-1.5">
+                        {attributesList.map((attr) => (
+                            <div key={attr.name} className="flex flex-col gap-1">
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                    {attr.values.map((val) => {
+                                        const isSelected = selectedOptions[attr.name] === val;
+                                        const outOfStock = isOptionOutOfStock(attr.name, val);
+                                        return (
+                                            <button
+                                                key={val}
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    handleOptionSelect(attr.name, val);
+                                                }}
+                                                disabled={outOfStock}
+                                                className={`min-w-[26px] h-6 px-1.5 flex items-center justify-center text-[10px] font-bold rounded uppercase transition-all cursor-pointer ${
+                                                    isSelected
+                                                        ? 'bg-rose-600 text-white border border-rose-600 shadow-xs'
+                                                        : outOfStock
+                                                            ? 'bg-slate-50 text-slate-300 border border-slate-200 line-through cursor-not-allowed opacity-50'
+                                                            : 'bg-white text-slate-700 border border-slate-200 hover:border-rose-400 hover:text-rose-600'
+                                                }`}
+                                                title={`${attr.name}: ${val}${outOfStock ? ' (Out of stock)' : ''}`}
+                                            >
+                                                {val}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                {selectedOptions[attr.name] && (
+                                    <span className="text-[10px] text-slate-400 font-medium">
+                                        {attr.name} <span className="font-semibold text-slate-700">{selectedOptions[attr.name]}</span> selected
+                                    </span>
+                                )}
+                            </div>
+                        ))}
                     </div>
                 )}
 

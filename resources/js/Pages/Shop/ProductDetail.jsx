@@ -5,7 +5,7 @@ import { useCart } from '../../Contexts/CartContext';
 import { getWishlistItems, toggleWishlistProduct } from '../../Services/Wishlist';
 import { 
     Star, ShoppingCart, GitCompare, Phone,
-    ChevronRight, Share2, Heart, FileText, ArrowRight, X, AlertCircle, PlayCircle
+    ChevronRight, ChevronLeft, Share2, Heart, FileText, ArrowRight, X, AlertCircle, PlayCircle
 } from 'lucide-react';
 import WhatsAppIcon from '../../Components/WhatsAppIcon';
 
@@ -103,6 +103,9 @@ export default function ProductDetail({ product, related, seo, eventId, breadcru
     const [wishlisted, setWishlisted] = useState(false);
     const [compared, setCompared] = useState(false);
     const [imageZoom, setImageZoom] = useState({ active: false, x: 50, y: 50 });
+    const [touchStartX, setTouchStartX] = useState(null);
+    const [touchEndX, setTouchEndX] = useState(null);
+    const [isMouseDown, setIsMouseDown] = useState(false);
 
     // Variation options state (for variable products)
     const [selectedOptions, setSelectedOptions] = useState({});
@@ -448,6 +451,96 @@ export default function ProductDetail({ product, related, seo, eventId, breadcru
     const forceHorizontalThumbs = thumbLayoutSetting === 'horizontal';
     const forceVerticalThumbs = thumbLayoutSetting === 'vertical';
 
+    const allSlides = [
+        ...mediaImages.map((img, idx) => ({ type: 'image', url: img.image_path, id: img.id || idx })),
+        ...(youtubeEmbedUrl ? [{ type: 'video', url: youtubeEmbedUrl, thumbnail: youtubeThumbnail, id: 'video' }] : [])
+    ];
+    const currentSlideIndex = allSlides.findIndex(s => activeIsVideo ? s.type === 'video' : s.url === activeImage);
+    const activeIndex = currentSlideIndex >= 0 ? currentSlideIndex : 0;
+
+    const goToSlide = (index) => {
+        const target = allSlides[index];
+        if (!target) return;
+        if (target.type === 'video') {
+            setActiveImage('__video__');
+        } else {
+            setActiveImage(target.url);
+        }
+    };
+
+    const goToPrevSlide = () => {
+        if (allSlides.length <= 1) return;
+        const nextIndex = (activeIndex - 1 + allSlides.length) % allSlides.length;
+        goToSlide(nextIndex);
+    };
+
+    const goToNextSlide = () => {
+        if (allSlides.length <= 1) return;
+        const nextIndex = (activeIndex + 1) % allSlides.length;
+        goToSlide(nextIndex);
+    };
+
+    const handleTouchStart = (e) => {
+        if (allSlides.length <= 1) return;
+        setTouchStartX(e.targetTouches[0].clientX);
+        setTouchEndX(null);
+    };
+
+    const handleTouchMove = (e) => {
+        if (allSlides.length <= 1) return;
+        setTouchEndX(e.targetTouches[0].clientX);
+    };
+
+    const handleTouchEnd = () => {
+        if (touchStartX === null || touchEndX === null) return;
+        const diff = touchStartX - touchEndX;
+        const minSwipeDistance = 45;
+        if (diff > minSwipeDistance) {
+            goToNextSlide();
+        } else if (diff < -minSwipeDistance) {
+            goToPrevSlide();
+        }
+        setTouchStartX(null);
+        setTouchEndX(null);
+    };
+
+    const handleMouseDown = (e) => {
+        if (allSlides.length <= 1) return;
+        setIsMouseDown(true);
+        setTouchStartX(e.clientX);
+        setTouchEndX(e.clientX);
+    };
+
+    const handleMouseMove = (e) => {
+        if (isMouseDown && allSlides.length > 1) {
+            setTouchEndX(e.clientX);
+        } else {
+            handleImageZoomMove(e);
+        }
+    };
+
+    const handleMouseUp = () => {
+        if (isMouseDown && touchStartX !== null && touchEndX !== null) {
+            const diff = touchStartX - touchEndX;
+            const minSwipeDistance = 35;
+            if (diff > minSwipeDistance) {
+                goToNextSlide();
+            } else if (diff < -minSwipeDistance) {
+                goToPrevSlide();
+            }
+        }
+        setIsMouseDown(false);
+        setTouchStartX(null);
+        setTouchEndX(null);
+    };
+
+    const handleMouseLeave = () => {
+        if (isMouseDown) {
+            handleMouseUp();
+        }
+        setImageZoom({ active: false, x: 50, y: 50 });
+    };
+
 
     const resolvedBreadcrumbs = breadcrumbs && breadcrumbs.length > 0
         ? breadcrumbs
@@ -500,16 +593,17 @@ export default function ProductDetail({ product, related, seo, eventId, breadcru
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8 xl:gap-10 items-start">
                     <div className="min-w-0">
                         <div className={`${forceVerticalThumbs ? 'grid grid-cols-[4rem_minmax(0,1fr)] items-start gap-3 md:grid-cols-[5rem_minmax(0,1fr)] md:gap-4' : forceHorizontalThumbs ? 'flex flex-col gap-3' : 'flex flex-col gap-3 md:flex-row md:gap-4'}`}>
-                            {/* Thumbnail rail. Responsive mode uses mobile horizontal thumbs; Always Vertical uses this rail on every screen. */}
-                            <div className={`${forceHorizontalThumbs ? 'order-2 flex w-full flex-row overflow-x-auto rounded-2xl border border-slate-200 bg-white/90 p-2 shadow-sm' : forceVerticalThumbs ? 'flex max-h-[340px] w-16 flex-shrink-0 flex-col gap-2 overflow-y-auto pr-1 md:max-h-none md:w-20 md:gap-2.5 md:overflow-visible md:pr-0' : 'hidden w-20 flex-shrink-0 flex-col gap-2.5 md:flex'}`}>
-                                {mediaImages.slice(0, 5).map((img, idx) => (
+                            {/* Thumbnail rail (Always Vertical or Desktop in Responsive mode) */}
+                            <div className={`${forceHorizontalThumbs ? 'order-2 flex w-full flex-row overflow-x-auto rounded-2xl border border-slate-200 bg-white/90 p-2 shadow-xs' : forceVerticalThumbs ? 'flex max-h-[460px] w-16 flex-shrink-0 flex-col gap-2 overflow-y-auto pr-1 md:max-h-none md:w-20 md:gap-2.5 md:overflow-visible md:pr-0' : 'hidden w-20 flex-shrink-0 flex-col gap-2.5 md:flex'}`}>
+                                {mediaImages.map((img, idx) => (
                                     <button
                                         key={img.id || idx}
                                         type="button"
                                         onClick={() => setActiveImage(img.image_path)}
-                                        className={`h-16 w-16 flex-none overflow-hidden md:h-20 md:w-20 rounded-xl border-2 bg-white p-1 shadow-sm transition-all ${activeImage === img.image_path ? 'border-[#f05a28]' : 'border-slate-200 hover:border-[#f05a28]/50'}`}
+                                        onMouseEnter={() => setActiveImage(img.image_path)}
+                                        className={`h-16 w-16 flex-none overflow-hidden md:h-20 md:w-20 rounded-xl border-2 bg-white p-0.5 shadow-xs transition-all cursor-pointer ${activeImage === img.image_path ? 'border-rose-600 ring-2 ring-rose-200' : 'border-slate-200 hover:border-rose-300'}`}
                                     >
-                                        <img src={img.image_path} className="h-full w-full rounded-lg object-cover" alt={product.name} />
+                                        <img src={img.image_path} className="h-full w-full rounded-lg object-cover pointer-events-none" alt={product.name} />
                                     </button>
                                 ))}
 
@@ -517,10 +611,11 @@ export default function ProductDetail({ product, related, seo, eventId, breadcru
                                     <button
                                         type="button"
                                         onClick={() => setActiveImage('__video__')}
-                                        className={`relative h-16 w-16 flex-none overflow-hidden md:h-20 md:w-20 rounded-xl border-2 bg-slate-900 shadow-sm transition-all ${activeIsVideo ? 'border-[#f05a28]' : 'border-slate-200 hover:border-[#f05a28]/50'}`}
+                                        onMouseEnter={() => setActiveImage('__video__')}
+                                        className={`relative h-16 w-16 flex-none overflow-hidden md:h-20 md:w-20 rounded-xl border-2 bg-slate-900 shadow-xs transition-all cursor-pointer ${activeIsVideo ? 'border-rose-600 ring-2 ring-rose-200' : 'border-slate-200 hover:border-rose-300'}`}
                                     >
                                         {youtubeThumbnail ? (
-                                            <img src={youtubeThumbnail} className="h-full w-full object-cover opacity-80" alt="Product video" />
+                                            <img src={youtubeThumbnail} className="h-full w-full object-cover opacity-80 pointer-events-none" alt="Product video" />
                                         ) : (
                                             <div className="h-full w-full bg-slate-800" />
                                         )}
@@ -531,47 +626,85 @@ export default function ProductDetail({ product, related, seo, eventId, breadcru
                                 )}
                             </div>
 
-                            <div className="relative flex min-w-0 max-w-full flex-1 items-center justify-center overflow-hidden rounded-[1.35rem] border border-slate-200 bg-white shadow-sm aspect-[4/3] md:min-h-[340px] xl:min-h-[440px] 2xl:min-h-[500px]">
+                            {/* Main Product Image Container: Exact aspect-square with object-cover, zero empty letterbox space */}
+                            <div
+                                className={`relative flex min-w-0 max-w-full flex-1 items-center justify-center overflow-hidden rounded-[1.35rem] border border-slate-200 bg-white shadow-xs aspect-square select-none ${allSlides.length > 1 ? (isMouseDown ? 'cursor-grabbing' : 'cursor-grab') : ''}`}
+                                onTouchStart={allSlides.length > 1 ? handleTouchStart : undefined}
+                                onTouchMove={allSlides.length > 1 ? handleTouchMove : undefined}
+                                onTouchEnd={allSlides.length > 1 ? handleTouchEnd : undefined}
+                                onMouseDown={allSlides.length > 1 ? handleMouseDown : undefined}
+                                onMouseMove={allSlides.length > 1 ? handleMouseMove : handleImageZoomMove}
+                                onMouseUp={allSlides.length > 1 ? handleMouseUp : undefined}
+                                onMouseLeave={handleMouseLeave}
+                            >
                                 {activeIsVideo && youtubeEmbedUrl ? (
                                     <iframe
                                         src={youtubeEmbedUrl}
                                         title={`${product.name} video`}
-                                        className="h-full min-h-[220px] w-full rounded-2xl md:min-h-[340px] xl:min-h-[440px] 2xl:min-h-[500px]"
+                                        className="h-full w-full rounded-2xl"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                         allowFullScreen
                                     />
                                 ) : (
                                     <div
-                                        className="group h-full min-h-[220px] w-full cursor-zoom-in overflow-hidden rounded-2xl md:min-h-[340px] md:rounded-none xl:min-h-[440px] 2xl:min-h-[500px]"
-                                        onMouseEnter={handleImageZoomMove}
-                                        onMouseMove={handleImageZoomMove}
-                                        onMouseLeave={() => setImageZoom({ active: false, x: 50, y: 50 })}
+                                        className="group h-full w-full overflow-hidden rounded-2xl"
                                     >
                                         <img
                                             src={activeImage}
-                                            className="h-full max-h-[500px] w-full object-cover transition-transform duration-150 ease-out"
+                                            draggable={false}
+                                            className="h-full w-full object-cover select-none pointer-events-none transition-transform duration-150 ease-out"
                                             alt={product.name}
                                             style={{
                                                 transformOrigin: `${imageZoom.x}% ${imageZoom.y}%`,
-                                                transform: imageZoom.active ? 'scale(2.15)' : 'scale(1)',
+                                                transform: imageZoom.active && !isMouseDown ? 'scale(2.15)' : 'scale(1)',
                                             }}
                                         />
-                                        <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-slate-950/65 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                                            Hover to zoom
-                                        </div>
                                     </div>
+                                )}
+
+                                {/* Slider Navigation Indicators (Only when multiple images exist) */}
+                                {allSlides.length > 1 && (
+                                    <>
+                                        {/* Counter Badge */}
+                                        <div className="absolute bottom-3 right-3 z-10 rounded-full bg-slate-900/60 px-2.5 py-0.5 text-[11px] font-semibold text-white backdrop-blur-xs">
+                                            {activeIndex + 1} / {allSlides.length}
+                                        </div>
+
+                                        {/* Slide Dots Indicator (Click or hover with mouse to switch) */}
+                                        {allSlides.length <= 8 && (
+                                            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5">
+                                                {allSlides.map((slide, idx) => (
+                                                    <button
+                                                        key={`dot-${slide.id || idx}`}
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            goToSlide(idx);
+                                                        }}
+                                                        onMouseEnter={() => goToSlide(idx)}
+                                                        className={`h-1.5 rounded-full transition-all duration-200 cursor-pointer ${
+                                                            activeIndex === idx ? 'w-4 bg-rose-600 shadow-xs' : 'w-1.5 bg-slate-400/70 hover:bg-slate-600'
+                                                        }`}
+                                                        aria-label={`Go to slide ${idx + 1}`}
+                                                    />
+                                                ))}
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
 
-                            <div className={`${forceHorizontalThumbs || forceVerticalThumbs ? 'hidden' : 'flex'} gap-2 overflow-x-auto rounded-2xl border border-slate-200 bg-white/90 p-2 shadow-sm md:hidden`}>
-                                {mediaImages.slice(0, 6).map((img, idx) => (
+                            {/* Mobile horizontal thumbnails rail (Used in Responsive mode) */}
+                            <div className={`${forceHorizontalThumbs || forceVerticalThumbs ? 'hidden' : 'flex'} gap-2 overflow-x-auto rounded-2xl border border-slate-200 bg-white/90 p-2 shadow-xs md:hidden`}>
+                                {mediaImages.map((img, idx) => (
                                     <button
                                         key={`mobile-${img.id || idx}`}
                                         type="button"
                                         onClick={() => setActiveImage(img.image_path)}
-                                        className={`h-16 w-16 flex-none overflow-hidden rounded-xl border-2 bg-white p-1 shadow-sm transition-all ${activeImage === img.image_path ? 'border-[#f05a28]' : 'border-slate-200'}`}
+                                        onMouseEnter={() => setActiveImage(img.image_path)}
+                                        className={`h-16 w-16 flex-none overflow-hidden rounded-xl border-2 bg-white p-0.5 shadow-xs transition-all cursor-pointer ${activeImage === img.image_path ? 'border-rose-600 ring-2 ring-rose-200' : 'border-slate-200 hover:border-rose-300'}`}
                                     >
-                                        <img src={img.image_path} className="h-full w-full rounded-lg object-cover" alt={product.name} />
+                                        <img src={img.image_path} className="h-full w-full rounded-lg object-cover pointer-events-none" alt={product.name} />
                                     </button>
                                 ))}
 
@@ -579,7 +712,8 @@ export default function ProductDetail({ product, related, seo, eventId, breadcru
                                     <button
                                         type="button"
                                         onClick={() => setActiveImage('__video__')}
-                                        className={`relative h-16 w-16 flex-none overflow-hidden rounded-xl border-2 bg-slate-900 shadow-sm transition-all ${activeIsVideo ? 'border-[#f05a28]' : 'border-slate-200'}`}
+                                        onMouseEnter={() => setActiveImage('__video__')}
+                                        className={`relative h-16 w-16 flex-none overflow-hidden rounded-xl border-2 bg-slate-900 shadow-xs transition-all cursor-pointer ${activeIsVideo ? 'border-rose-600 ring-2 ring-rose-200' : 'border-slate-200 hover:border-rose-300'}`}
                                     >
                                         {youtubeThumbnail ? (
                                             <img src={youtubeThumbnail} className="h-full w-full object-cover opacity-80" alt="Product video" />

@@ -12,9 +12,12 @@ export default function Welcome({ sections = [], settings = {}, home_categories 
     const [toastMessage, setToastMessage] = useState(null);
     const [activeCategory, setActiveCategory] = useState('all');
 
-    const handleAdd = (product) => {
-        addToCart(product, null, 1);
-        setToastMessage(`Added "${product.name}" to shopping bag!`);
+    const handleAdd = (product, variant = null, qty = 1) => {
+        addToCart(product, variant, qty);
+        const varLabel = variant?.attribute_values?.length
+            ? ` (${variant.attribute_values.map(av => av.value).join(', ')})`
+            : (variant?.sku ? ` (${variant.sku})` : '');
+        setToastMessage(`Added "${product.name}${varLabel}" to shopping bag!`);
     };
 
     useEffect(() => {
@@ -395,15 +398,113 @@ function RoseFashionProductsSection({ settings = {}, all_products = [], activeCa
 }
 
 function RoseFashionProductCard({ product, onAddToCart }) {
-    const primaryImg = product.primary_image?.image_path || product.images?.[0]?.image_path || 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600';
-    const secondaryImg = product.images?.[1]?.image_path || product.settings?.secondary_image || primaryImg;
+    const hasVariants = (product.type === 'variable' || product.type === 'option') && product.variants?.length > 0;
+
+    const attributesList = useMemo(() => {
+        if (!hasVariants) return [];
+        const attrs = {};
+        product.variants.forEach(variant => {
+            const valuesArr = variant.attribute_values || variant.attributeValues || [];
+            valuesArr.forEach(av => {
+                const attrName = av.attribute?.name || av.attribute?.code;
+                if (attrName) {
+                    if (!attrs[attrName]) attrs[attrName] = [];
+                    if (!attrs[attrName].includes(av.value)) attrs[attrName].push(av.value);
+                }
+            });
+            if (variant.attributes && typeof variant.attributes === 'object') {
+                Object.entries(variant.attributes).forEach(([k, v]) => {
+                    if (!attrs[k]) attrs[k] = [];
+                    if (!attrs[k].includes(v)) attrs[k].push(v);
+                });
+            }
+        });
+
+        if (Object.keys(attrs).length === 0 && product.variants.length > 0) {
+            const variantNames = product.variants.map(v => v.title || v.name).filter(Boolean);
+            if (variantNames.length > 0) {
+                attrs['Option'] = Array.from(new Set(variantNames));
+            }
+        }
+
+        return Object.keys(attrs).map(name => ({
+            name,
+            values: attrs[name]
+        }));
+    }, [product, hasVariants]);
+
+    const matchesVariant = (variant, opts) => {
+        const valuesArr = variant.attribute_values || variant.attributeValues || [];
+        const variantOpts = valuesArr.reduce((acc, av) => {
+            const attrName = av.attribute?.name || av.attribute?.code;
+            if (attrName) acc[attrName] = av.value;
+            return acc;
+        }, {});
+        if (variant.attributes && typeof variant.attributes === 'object') {
+            Object.assign(variantOpts, variant.attributes);
+        }
+        if (variant.title || variant.name) {
+            variantOpts['Option'] = variant.title || variant.name;
+        }
+        return Object.entries(opts).every(([k, v]) => variantOpts[k] === v);
+    };
+
+    const [selectedOptions, setSelectedOptions] = useState(() => {
+        if (!hasVariants) return {};
+        const initial = {};
+        const firstVariant = product.variants.find(v => Number(v.stock || 0) > 0) || product.variants[0];
+        if (firstVariant) {
+            const valuesArr = firstVariant.attribute_values || firstVariant.attributeValues || [];
+            valuesArr.forEach(av => {
+                const attrName = av.attribute?.name || av.attribute?.code;
+                if (attrName) initial[attrName] = av.value;
+            });
+            if (firstVariant.attributes && typeof firstVariant.attributes === 'object') {
+                Object.entries(firstVariant.attributes).forEach(([k, v]) => {
+                    if (!initial[k]) initial[k] = v;
+                });
+            }
+            if (Object.keys(initial).length === 0 && (firstVariant.title || firstVariant.name)) {
+                initial['Option'] = firstVariant.title || firstVariant.name;
+            }
+        }
+        return initial;
+    });
+
+    const selectedVariant = useMemo(() => {
+        if (!hasVariants) return null;
+        return product.variants.find(v => matchesVariant(v, selectedOptions)) || null;
+    }, [hasVariants, product.variants, selectedOptions]);
+
+    const handleOptionSelect = (attrName, val) => {
+        setSelectedOptions(prev => ({
+            ...prev,
+            [attrName]: val
+        }));
+    };
+
+    const isOptionOutOfStock = (attrName, val) => {
+        if (!hasVariants) return false;
+        const testOpts = { ...selectedOptions, [attrName]: val };
+        const matched = product.variants.find(v => matchesVariant(v, testOpts));
+        return matched ? Number(matched.stock || 0) <= 0 : true;
+    };
+
+    const isOutOfStock = hasVariants
+        ? (selectedVariant ? Number(selectedVariant.stock || 0) <= 0 : !product.variants.some(v => Number(v.stock || 0) > 0))
+        : Number(product.stock || 0) <= 0 && product.type !== 'digital';
+
+    const primaryImg = (selectedVariant?.image_path) || product.primary_image?.image_path || product.images?.[0]?.image_path || 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600';
+    const secondaryImg = (selectedVariant?.image_path ? primaryImg : (product.images?.[1]?.image_path || product.settings?.secondary_image || primaryImg));
     const badge = product.settings?.custom_badge || (product.labels && product.labels[0]) || (product.is_featured ? 'Bestseller' : null);
     const categoryName = product.categories?.[0]?.name || product.settings?.category_slug || 'Fashion';
 
-    const originalPrice = parseFloat(product.price || 0);
-    const salePrice = product.sale_price !== null && product.sale_price !== undefined && product.sale_price !== ''
-        ? parseFloat(product.sale_price)
-        : null;
+    const originalPrice = parseFloat(selectedVariant?.price || product.price || 0);
+    const salePrice = (selectedVariant?.sale_price !== null && selectedVariant?.sale_price !== undefined && selectedVariant?.sale_price !== '')
+        ? parseFloat(selectedVariant.sale_price)
+        : (product.sale_price !== null && product.sale_price !== undefined && product.sale_price !== ''
+            ? parseFloat(product.sale_price)
+            : null);
     const hasDiscount = salePrice !== null && !isNaN(salePrice) && originalPrice > 0 && salePrice < originalPrice;
     const currentPrice = hasDiscount ? salePrice : (salePrice || originalPrice || 0);
     const discountPercent = hasDiscount && originalPrice > 0
@@ -441,7 +542,7 @@ function RoseFashionProductCard({ product, onAddToCart }) {
                 </div>
             </Link>
 
-            <div className="p-3 sm:p-6 flex flex-col flex-grow justify-between bg-white">
+            <div className="p-3 sm:p-5 flex flex-col flex-grow justify-between bg-white">
                 <div>
                     <span className="text-[10px] sm:text-xs uppercase tracking-wider text-rose-600 font-semibold truncate block">{categoryName}</span>
                     <Link href={route('product.show', { slug: product.slug })}>
@@ -449,9 +550,9 @@ function RoseFashionProductCard({ product, onAddToCart }) {
                             {product.name}
                         </h3>
                     </Link>
-                </div>
-                <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row sm:items-center justify-between pt-2.5 sm:pt-4 border-t border-slate-100 gap-2 sm:gap-0">
-                    <div className="flex flex-wrap items-baseline gap-1 sm:gap-2">
+
+                    {/* Price */}
+                    <div className="mt-2 flex flex-wrap items-baseline gap-1 sm:gap-2">
                         <span className="text-sm sm:text-lg font-bold text-slate-900">
                             ৳ {Number(currentPrice).toLocaleString()}
                         </span>
@@ -461,13 +562,75 @@ function RoseFashionProductCard({ product, onAddToCart }) {
                             </span>
                         )}
                     </div>
-                    <button
-                        onClick={() => onAddToCart(product)}
-                        className="w-full sm:w-auto justify-center bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white text-[11px] sm:text-xs font-semibold px-2.5 sm:px-4 py-1.5 sm:py-2.5 rounded-full transition duration-300 flex items-center gap-1.5 shadow-xs transform hover:scale-105 cursor-pointer shrink-0"
-                    >
-                        <ShoppingBag className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                        <span>Add to Bag</span>
-                    </button>
+
+                    {/* Variant Options Pills (like Tabaya sample) */}
+                    {hasVariants && attributesList.length > 0 && (
+                        <div className="mt-2.5 pt-2 border-t border-slate-100 flex flex-col gap-2">
+                            {attributesList.map((attr) => (
+                                <div key={attr.name} className="flex flex-col gap-1">
+                                    <div className="flex flex-wrap items-center gap-1.5">
+                                        {attr.values.map((val) => {
+                                            const isSelected = selectedOptions[attr.name] === val;
+                                            const outOfStock = isOptionOutOfStock(attr.name, val);
+                                            return (
+                                                <button
+                                                    key={val}
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        handleOptionSelect(attr.name, val);
+                                                    }}
+                                                    disabled={outOfStock}
+                                                    className={`min-w-[26px] sm:min-w-[28px] h-6 sm:h-7 px-1.5 sm:px-2 flex items-center justify-center text-[9.5px] sm:text-[11px] font-bold rounded uppercase transition-all cursor-pointer ${
+                                                        isSelected
+                                                            ? 'bg-rose-600 text-white border border-rose-600 shadow-xs'
+                                                            : outOfStock
+                                                                ? 'bg-slate-50 text-slate-300 border border-slate-200 line-through cursor-not-allowed opacity-50'
+                                                                : 'bg-white text-slate-700 border border-slate-200 hover:border-rose-400 hover:text-rose-600'
+                                                    }`}
+                                                    title={`${attr.name}: ${val}${outOfStock ? ' (Out of stock)' : ''}`}
+                                                >
+                                                    {val}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    {selectedOptions[attr.name] && (
+                                        <span className="text-[10px] text-slate-400 font-medium">
+                                            {attr.name} <span className="font-semibold text-slate-700">{selectedOptions[attr.name]}</span> selected
+                                        </span>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Add to Bag or Sold Out Button */}
+                <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-slate-100">
+                    {isOutOfStock ? (
+                        <button
+                            type="button"
+                            disabled
+                            className="w-full justify-center bg-slate-100 text-slate-400 border border-slate-200 text-[11px] sm:text-xs font-bold py-2 rounded-full cursor-not-allowed uppercase tracking-wider flex items-center justify-center"
+                        >
+                            Sold Out
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onAddToCart(product, selectedVariant, 1);
+                            }}
+                            className="w-full justify-center bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white text-[11px] sm:text-xs font-semibold px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-full transition duration-300 flex items-center gap-1.5 shadow-xs transform hover:scale-[1.02] cursor-pointer"
+                        >
+                            <ShoppingBag className="w-3.5 h-3.5" />
+                            <span>Add to Bag</span>
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
