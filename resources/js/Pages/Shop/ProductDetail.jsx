@@ -218,6 +218,32 @@ export default function ProductDetail({ product, related, seo, eventId, breadcru
             }));
             
             setAttributesList(formatted);
+
+            // Default: Auto-select 1st option for each attribute
+            const defaultOpts = {};
+            const firstVariant = product.variants.find(v => v.stock > 0) || product.variants[0];
+            if (firstVariant) {
+                const valuesArr = firstVariant.attribute_values || firstVariant.attributeValues || [];
+                valuesArr.forEach(av => {
+                    const attrName = av.attribute?.name || av.attribute?.code;
+                    if (attrName) {
+                        defaultOpts[attrName] = av.value;
+                    }
+                });
+                if (firstVariant.attributes && typeof firstVariant.attributes === 'object') {
+                    Object.entries(firstVariant.attributes).forEach(([k, v]) => {
+                        if (!defaultOpts[k]) defaultOpts[k] = v;
+                    });
+                }
+            }
+
+            formatted.forEach(attr => {
+                if (!defaultOpts[attr.name] && attr.values?.length > 0) {
+                    defaultOpts[attr.name] = attr.values[0];
+                }
+            });
+
+            setSelectedOptions(defaultOpts);
         }
     }, [product]);
 
@@ -591,16 +617,20 @@ export default function ProductDetail({ product, related, seo, eventId, breadcru
 
                     <div className="min-w-0">
                         <div className="p-2 shadow-sm sm:p-5 lg:p-6">
-                            {(product.settings?.custom_badge || product.badge) && (
-                                <div className="mb-2.5">
-                                    <span
-                                        className="inline-block rounded-xs px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider shadow-xs"
-                                        style={{ backgroundColor: ribbonBadgeBg, color: ribbonBadgeText }}
-                                    >
-                                        {product.settings?.custom_badge || product.badge}
-                                    </span>
-                                </div>
-                            )}
+                            {(() => {
+                                const badge = product.settings?.custom_badge || product.badge;
+                                if (!badge || String(badge).trim().toLowerCase() === 'bridal exclusive') return null;
+                                return (
+                                    <div className="mb-2.5">
+                                        <span
+                                            className="inline-block rounded-xs px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider shadow-xs"
+                                            style={{ backgroundColor: ribbonBadgeBg, color: ribbonBadgeText }}
+                                        >
+                                            {badge}
+                                        </span>
+                                    </div>
+                                );
+                            })()}
                             <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-slate-900 leading-snug">{product.name}</h1>
 
                             <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-500">
@@ -649,7 +679,7 @@ export default function ProductDetail({ product, related, seo, eventId, breadcru
                                     <div className="flex items-center justify-between">
                                         <span className="text-xs font-bold text-slate-700">Select {attr.name}</span>
                                         {attr.name.toLowerCase() === 'size' && sizeChart && (
-                                            <button type="button" onClick={() => setIsSizeGuideOpen(true)} className="rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-bold text-[#f04a23]">Size Guide</button>
+                                            <button type="button" onClick={() => setIsSizeGuideOpen(true)} className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[10px] font-bold text-rose-600">Size Guide</button>
                                         )}
                                     </div>
                                     <div className="flex flex-wrap gap-2.5">
@@ -672,10 +702,10 @@ export default function ProductDetail({ product, related, seo, eventId, breadcru
                                                         optionImg ? 'p-1.5 pr-3' : 'h-10 min-w-10 px-3.5'
                                                     } ${
                                                         isSelected
-                                                            ? 'border-[#f04a23] bg-orange-50 text-[#f04a23] shadow-xs ring-1 ring-[#f04a23]'
+                                                            ? 'border-rose-600 bg-rose-50 text-rose-600 shadow-xs ring-1 ring-rose-600 font-bold'
                                                             : isOut
                                                                 ? 'cursor-not-allowed border-slate-100 bg-slate-50 text-slate-300 opacity-60'
-                                                                : 'border-slate-200 bg-white text-slate-700 hover:border-[#f04a23]/50 hover:bg-slate-50/50'
+                                                                : 'border-slate-200 bg-white text-slate-700 hover:border-rose-400 hover:bg-rose-50/40'
                                                     }`}
                                                 >
                                                     {optionImg && (

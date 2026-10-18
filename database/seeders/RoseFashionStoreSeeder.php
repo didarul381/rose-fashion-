@@ -102,7 +102,7 @@ class RoseFashionStoreSeeder extends Seeder
                 'category_id' => $catLehengas->id,
                 'category_slug' => 'lehengas',
                 'price' => 18500,
-                'badge' => 'Bridal Exclusive',
+                'badge' => null,
                 'primary_img' => 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=600',
                 'secondary_img' => 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600',
             ],

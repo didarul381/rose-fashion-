@@ -275,9 +275,37 @@ export default function ShopLayout({ children, hideMobileBottomNav = false }) {
             {/* Rose Fashion Header */}
             <header ref={headerRef} className={`${headerSticky ? 'sticky top-0' : 'relative'} z-50 bg-white/90 backdrop-blur-md shadow-sm border-b border-rose-100/60 transition-all duration-300`}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-20">
-                        {/* Logo */}
+                    <div className="flex items-center justify-between h-20 relative">
+                        {/* Left: Mobile Menu Toggle on Mobile, Brand Logo on Desktop */}
                         <div className="flex items-center">
+                            {/* Mobile Hamburger Button */}
+                            <button
+                                onClick={() => setMenuOpen(!menuOpen)}
+                                className="lg:hidden p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 transition cursor-pointer active:scale-95"
+                                aria-label="Toggle Menu"
+                            >
+                                {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                            </button>
+
+                            {/* Desktop Brand Logo */}
+                            <div className="hidden lg:flex items-center">
+                                <Link href={route('home')} className="group flex items-center">
+                                    <img
+                                        src={logo}
+                                        alt={storeName}
+                                        onError={(e) => {
+                                            if (!e.currentTarget.src.endsWith('/logo.png')) {
+                                                e.currentTarget.src = '/logo.png';
+                                            }
+                                        }}
+                                        className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover shadow-md group-hover:scale-110 transition duration-300"
+                                    />
+                                </Link>
+                            </div>
+                        </div>
+
+                        {/* Mobile Centered Logo */}
+                        <div className="lg:hidden absolute left-1/2 -translate-x-1/2 flex items-center pointer-events-auto">
                             <Link href={route('home')} className="group flex items-center">
                                 <img
                                     src={logo}
@@ -287,7 +315,7 @@ export default function ShopLayout({ children, hideMobileBottomNav = false }) {
                                             e.currentTarget.src = '/logo.png';
                                         }
                                     }}
-                                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover shadow-md group-hover:scale-110 transition duration-300"
+                                    className="w-14 h-14 rounded-full object-cover shadow-md group-hover:scale-110 transition duration-300"
                                 />
                             </Link>
                         </div>
@@ -322,8 +350,8 @@ export default function ShopLayout({ children, hideMobileBottomNav = false }) {
                             })}
                         </nav>
 
-                        {/* Actions: Search, Cart & Mobile Menu Toggle */}
-                        <div className="flex items-center space-x-3 sm:space-x-4">
+                        {/* Actions: Search, Cart & Desktop Social Pill */}
+                        <div className="flex items-center space-x-2 sm:space-x-4">
                             <button
                                 onClick={() => setMobileSearchOpen(true)}
                                 className="p-2.5 text-slate-600 hover:text-rose-600 transition rounded-full hover:bg-rose-50 transform hover:scale-110 cursor-pointer"
@@ -354,14 +382,6 @@ export default function ShopLayout({ children, hideMobileBottomNav = false }) {
                                     <span>{socialButtonText}</span>
                                 </a>
                             )}
-
-                            <button
-                                onClick={() => setMenuOpen(!menuOpen)}
-                                className="lg:hidden p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 transition cursor-pointer active:scale-95"
-                                aria-label="Toggle Menu"
-                            >
-                                {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -1017,29 +1037,42 @@ function CartDrawer({ items, subtotal, onClose, remove, update, money }) {
     const cartCount = items.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
 
     return (
-        <div className="fixed inset-0 z-[70] bg-slate-950/55" onClick={onClose}>
+        <div className="fixed inset-0 z-[100] flex justify-end">
+            {/* Dark Backdrop with smooth fade-in */}
+            <div
+                className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+                onClick={onClose}
+                aria-hidden="true"
+            />
+
+            {/* Slide-in Drawer Panel */}
             <aside
-                className="ml-auto flex h-full w-full max-w-[450px] flex-col bg-white shadow-2xl"
+                className="relative ml-auto flex h-[100dvh] w-[86vw] sm:w-full max-w-[420px] flex-col bg-white shadow-2xl z-10 animate-in slide-in-from-right duration-300"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex h-20 items-center justify-between border-b border-slate-100 px-6">
-                    <div className="flex items-center gap-3">
-                        <ShoppingCart className="h-5 w-5 text-[#ff4b19]" />
-                        <h2 className="text-lg font-black text-slate-800">Shopping Cart ({cartCount})</h2>
+                <div className="flex h-20 items-center justify-between border-b border-slate-100 px-5 sm:px-6 shrink-0">
+                    <div className="flex items-center gap-2.5">
+                        <ShoppingBag className="h-5 w-5 text-rose-600" />
+                        <div>
+                            <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">Shopping Cart</h2>
+                            <p className="text-[11px] text-slate-500 font-medium">
+                                {cartCount} {cartCount === 1 ? 'item' : 'items'} in your bag
+                            </p>
+                        </div>
                     </div>
                     <button
                         type="button"
                         onClick={onClose}
-                        className="grid h-9 w-9 place-items-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                        className="grid h-9 w-9 place-items-center rounded-full text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 cursor-pointer active:scale-95"
                         aria-label="Close cart"
                     >
                         <X className="h-5 w-5" />
                     </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-6 py-5">
+                <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-5">
                     {items.length === 0 ? (
-                        <Empty icon={ShoppingCart} text="Your cart is empty" />
+                        <Empty icon={ShoppingBag} text="Your cart is empty" />
                     ) : (
                         <div className="space-y-4">
                             {items.map((item) => {
@@ -1048,24 +1081,24 @@ function CartDrawer({ items, subtotal, onClose, remove, update, money }) {
                                     <div key={item.cartId} className="grid grid-cols-[66px_1fr_auto] gap-3">
                                         <img src={item.image} alt={item.name} className="h-16 w-16 rounded-xl bg-slate-50 object-cover" />
                                         <div className="min-w-0">
-                                            <Link href={route('product.show', { slug: item.slug })} onClick={onClose} className="line-clamp-1 text-sm font-black text-slate-800 hover:text-[#ff4b19]">
+                                            <Link href={route('product.show', { slug: item.slug })} onClick={onClose} className="line-clamp-1 text-sm font-bold text-slate-800 hover:text-rose-600">
                                                 {item.name}
                                             </Link>
                                             <div className="mt-3 inline-flex h-7 overflow-hidden rounded-md border border-slate-200 bg-slate-50">
-                                                <button type="button" onClick={() => update(item.cartId, item.quantity - 1)} className="grid w-8 place-items-center text-slate-500 hover:bg-white">
+                                                <button type="button" onClick={() => update(item.cartId, item.quantity - 1)} className="grid w-8 place-items-center text-slate-500 hover:bg-white cursor-pointer active:scale-90">
                                                     <Minus className="h-3.5 w-3.5" />
                                                 </button>
                                                 <span className="grid min-w-8 place-items-center border-x border-slate-200 px-2 text-sm font-bold text-slate-700">{item.quantity}</span>
-                                                <button type="button" onClick={() => update(item.cartId, item.quantity + 1)} className="grid w-8 place-items-center text-slate-500 hover:bg-white">
+                                                <button type="button" onClick={() => update(item.cartId, item.quantity + 1)} className="grid w-8 place-items-center text-slate-500 hover:bg-white cursor-pointer active:scale-90">
                                                     <Plus className="h-3.5 w-3.5" />
                                                 </button>
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-end justify-between gap-3">
-                                            <button type="button" onClick={() => remove(item.cartId)} className="text-slate-300 transition hover:text-red-500" aria-label="Remove item">
+                                            <button type="button" onClick={() => remove(item.cartId)} className="text-slate-300 transition hover:text-red-500 cursor-pointer active:scale-90" aria-label="Remove item">
                                                 <Trash2 className="h-4 w-4" />
                                             </button>
-                                            <span className="whitespace-nowrap text-sm font-black text-slate-800">{money(lineTotal)}</span>
+                                            <span className="whitespace-nowrap text-sm font-bold text-slate-900">{money(lineTotal)}</span>
                                         </div>
                                     </div>
                                 );
@@ -1074,22 +1107,22 @@ function CartDrawer({ items, subtotal, onClose, remove, update, money }) {
                     )}
                 </div>
 
-                <div className="border-t border-slate-100 bg-white px-6 pb-6 pt-5">
+                <div className="border-t border-slate-100 bg-white px-5 sm:px-6 pb-6 pt-5 shrink-0">
                     <div className="flex gap-2">
                         <input
                             type="text"
-                            placeholder="Promo Code (LAUNCH15)"
-                            className="h-10 min-w-0 flex-1 rounded-lg border border-slate-200 px-4 text-sm font-medium text-slate-600 outline-none transition focus:border-[#ff4b19] focus:ring-2 focus:ring-orange-100"
+                            placeholder="Promo Code (ROSE10)"
+                            className="h-10 min-w-0 flex-1 rounded-lg border border-slate-200 px-4 text-sm font-medium text-slate-600 outline-none transition focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
                         />
-                        <button type="button" className="h-10 rounded-lg bg-slate-900 px-5 text-sm font-black text-white transition hover:bg-[#102f58]">
+                        <button type="button" className="h-10 rounded-lg bg-slate-900 px-5 text-sm font-bold text-white transition hover:bg-rose-950 cursor-pointer active:scale-95">
                             Apply
                         </button>
                     </div>
 
-                    <div className="mt-4 space-y-3 text-sm">
+                    <div className="mt-4 space-y-2.5 text-sm">
                         <div className="flex items-center justify-between text-slate-500">
                             <span>Subtotal</span>
-                            <span className="font-bold text-slate-700">{money(subtotal)}</span>
+                            <span className="font-bold text-slate-800">{money(subtotal)}</span>
                         </div>
                         <div className="flex items-center justify-between text-slate-500">
                             <span>Estimated Delivery</span>
@@ -1097,16 +1130,16 @@ function CartDrawer({ items, subtotal, onClose, remove, update, money }) {
                         </div>
                     </div>
 
-                    <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-5">
-                        <span className="text-base font-black text-slate-800">Total</span>
-                        <span className="text-xl font-black text-[#ff4b19]">{money(subtotal)}</span>
+                    <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4">
+                        <span className="text-base font-bold text-slate-900">Total</span>
+                        <span className="text-xl font-bold text-rose-600">{money(subtotal)}</span>
                     </div>
 
                     <div className="mt-4 grid grid-cols-2 gap-2.5 sm:gap-3">
                         <Link href={route('cart.index')} onClick={onClose} className="flex h-12 items-center justify-center rounded-xl border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 sm:h-14 sm:text-sm sm:font-bold">
                             View Full Cart
                         </Link>
-                        <Link href={route('checkout.index')} onClick={onClose} className="flex h-12 items-center justify-center gap-1.5 rounded-xl bg-[#ff6a13] px-2 text-xs font-semibold text-white shadow-md shadow-orange-100 transition hover:bg-[#f04f12] sm:h-14 sm:gap-2 sm:text-sm sm:font-bold">
+                        <Link href={route('checkout.index')} onClick={onClose} className="flex h-12 items-center justify-center gap-1.5 rounded-xl bg-rose-600 px-2 text-xs font-semibold text-white shadow-md shadow-rose-200 transition hover:bg-rose-700 sm:h-14 sm:gap-2 sm:text-sm sm:font-bold active:scale-95">
                             <span className="sm:hidden">Checkout</span><span className="hidden sm:inline">Proceed to Checkout</span> <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         </Link>
                     </div>
