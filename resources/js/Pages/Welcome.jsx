@@ -194,35 +194,41 @@ function RoseFashionHero({ settings = {} }) {
                     </div>
 
                     {/* Hero Visual Banner Card */}
-                    <div className="lg:col-span-5 flex justify-center">
-                        <div className="relative w-full max-w-md bg-gradient-to-b from-rose-900/40 to-slate-900/60 p-6 rounded-3xl border border-rose-500/30 shadow-2xl backdrop-blur-md transform hover:scale-[1.02] transition duration-500">
+                    <div className="lg:col-span-5 flex justify-center items-center">
+                        <div className="relative w-full max-w-md bg-gradient-to-b from-rose-900/30 via-slate-900/50 to-slate-900/70 p-3 sm:p-4 rounded-3xl border border-rose-500/30 shadow-2xl backdrop-blur-md transform hover:scale-[1.01] transition duration-500">
                             {cardBadge && (
-                                <div className="absolute -top-3 -right-3 bg-amber-500 text-slate-950 font-bold text-xs px-3 py-1 rounded-full shadow-md uppercase tracking-wider animate-bounce">
+                                <div className="absolute -top-3 -right-3 z-20 bg-amber-500 text-slate-950 font-bold text-xs px-3.5 py-1 rounded-full shadow-lg uppercase tracking-wider">
                                     {cardBadge}
                                 </div>
                             )}
-                            <div className="overflow-hidden rounded-2xl h-80 bg-rose-900/20 relative group">
+                            <div className="overflow-hidden rounded-2xl bg-slate-950/40 relative group flex items-center justify-center">
                                 <img
                                     src={cardImage}
                                     alt={cardTitle}
-                                    className="w-full h-full object-cover group-hover:scale-110 transition duration-700"
+                                    className="w-full h-auto max-h-[580px] object-contain rounded-2xl group-hover:scale-105 transition duration-700 block mx-auto"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-6">
-                                    <div>
-                                        <span className="text-rose-400 text-xs font-semibold uppercase tracking-wider">{cardTag}</span>
-                                        <h3 className="font-serif text-2xl font-bold text-white mt-0.5">{cardTitle}</h3>
-                                        <p className="text-slate-300 text-sm mt-1">{cardPrice}</p>
-                                    </div>
+                            </div>
+                            {(cardTag || cardTitle || cardPrice) && (
+                                <div className="mt-3 px-2">
+                                    {cardTag && <span className="text-rose-400 text-xs font-semibold uppercase tracking-wider block">{cardTag}</span>}
+                                    {cardTitle && <h3 className="font-serif text-xl sm:text-2xl font-bold text-white mt-0.5">{cardTitle}</h3>}
+                                    {cardPrice && <p className="text-slate-300 text-xs sm:text-sm mt-1">{cardPrice}</p>}
                                 </div>
-                            </div>
-                            <div className="mt-4 flex items-center justify-between text-xs text-slate-300 px-2">
-                                <span className="flex items-center gap-1.5 text-slate-300">
-                                    <span className="text-rose-500">📍</span> {cardLocation}
-                                </span>
-                                <a href={cardChatLink} target="_blank" rel="noopener noreferrer" className="text-rose-400 hover:underline font-medium">
-                                    Chat on Facebook &rarr;
-                                </a>
-                            </div>
+                            )}
+                            {(cardLocation || cardChatLink) && (
+                                <div className="mt-3 pt-2.5 border-t border-slate-700/50 flex items-center justify-between text-xs text-slate-300 px-2">
+                                    {cardLocation && (
+                                        <span className="flex items-center gap-1.5 text-slate-300">
+                                            <span className="text-rose-500">📍</span> {cardLocation}
+                                        </span>
+                                    )}
+                                    {cardChatLink && (
+                                        <a href={cardChatLink} target="_blank" rel="noopener noreferrer" className="text-rose-400 hover:underline font-medium ml-auto">
+                                            Chat on Facebook &rarr;
+                                        </a>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -274,13 +280,13 @@ function RoseFashionCategoryGrid({ settings = {}, onSelectCategory }) {
                             key={idx}
                             className="group relative bg-slate-50 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition duration-500 border border-slate-100 flex flex-col transform hover:-translate-y-2"
                         >
-                            <div className="h-36 sm:h-64 overflow-hidden relative">
+                            <div className="h-40 sm:h-64 overflow-hidden relative bg-slate-100">
                                 <img
                                     src={item.image}
                                     alt={item.title}
-                                    className="w-full h-full object-cover group-hover:scale-110 transition duration-700"
+                                    className="w-full h-full object-cover group-hover:scale-105 transition duration-700"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent pointer-events-none"></div>
                                 {item.badge && (
                                     <span className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 bg-rose-600/90 backdrop-blur-sm text-white text-[10px] sm:text-xs px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full font-medium">
                                         {item.badge}
@@ -515,7 +521,7 @@ function RoseFashionProductCard({ product, onAddToCart }) {
 
     return (
         <div className="product-card bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition duration-500 border border-slate-100 flex flex-col group transform hover:-translate-y-2">
-            <Link href={route('product.show', { slug: product.slug })} className="h-48 sm:h-72 overflow-hidden relative bg-slate-100 cursor-pointer block">
+            <Link href={route('product.show', { slug: product.slug })} className="h-52 sm:h-72 overflow-hidden relative bg-slate-100 cursor-pointer block">
                 {/* Primary Image */}
                 <img
                     src={primaryImg}
