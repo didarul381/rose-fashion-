@@ -180,6 +180,7 @@ export default function ThemeCustomize({ settings }) {
         card_shadow: 'md',
         card_badge_position: 'top-left',
         card_hover_style: 'lift',
+        card_show_quick_view: 'true',
         card_show_wishlist: 'true',
         card_show_compare: 'true',
         card_show_custom_badge: 'true',
@@ -1520,6 +1521,7 @@ export default function ThemeCustomize({ settings }) {
                                     <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-4">Card Display Elements Toggles</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         {[
+                                            ['card_show_quick_view', 'Show Quick View (Eye Icon)'],
                                             ['card_show_wishlist', 'Show Wishlist Icon'],
                                             ['card_show_compare', 'Show Compare Icon'],
                                             ['card_show_custom_badge', 'Show Product Badge (Ribbon)'],

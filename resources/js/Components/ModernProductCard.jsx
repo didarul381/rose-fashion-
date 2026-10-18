@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
-import { Heart, ShoppingCart, ArrowRight, Star, GitCompare } from 'lucide-react';
+import { Heart, ShoppingCart, ArrowRight, Star, GitCompare, Eye } from 'lucide-react';
 import { getWishlistItems, toggleWishlistProduct } from '../Services/Wishlist';
 import { isProductCompared, toggleCompareProduct } from '../Services/Compare';
 
@@ -132,6 +132,7 @@ export default function ModernProductCard({ product, onAddToCart, settings = {} 
     const hoverMode = settings.card_hover_style || 'lift';
     const badgePosition = settings.card_badge_position === 'top-right' ? 'right-2.5' : 'left-2.5';
 
+    const showQuickView = enabled(settings, 'card_show_quick_view');
     const showWishlist = enabled(settings, 'card_show_wishlist');
     const showCompare = enabled(settings, 'card_show_compare') && String(product.settings?.comparison_status || 'enabled') !== 'disabled';
     const showCustomBadge = enabled(settings, 'card_show_custom_badge');
@@ -302,6 +303,20 @@ export default function ModernProductCard({ product, onAddToCart, settings = {} 
                 </div>
 
                 <div className="absolute right-2.5 top-2.5 z-20 flex flex-col gap-2">
+                    {showQuickView && (
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                window.dispatchEvent(new CustomEvent('open-quick-view', { detail: { product } }));
+                            }}
+                            className="grid h-9 w-9 place-items-center rounded-full bg-white/95 text-slate-500 shadow transition hover:text-rose-600 cursor-pointer"
+                            aria-label="Quick View"
+                            title="Quick View"
+                        >
+                            <Eye className="h-4 w-4" />
+                        </button>
+                    )}
                     {showWishlist && (
                         <button
                             onClick={handleWishlistClick}
@@ -414,7 +429,27 @@ export default function ModernProductCard({ product, onAddToCart, settings = {} 
                 )}
 
                 <div className="mt-auto space-y-1.5 pt-3">
-                    {(showAddToCart || (hasVariants && showBuyNow)) && primaryAction}
+                    {(showAddToCart || (hasVariants && showBuyNow)) && (
+                        <div className="flex items-center gap-2">
+                            <div className="flex-1">
+                                {primaryAction}
+                            </div>
+                            {showQuickView && (
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        window.dispatchEvent(new CustomEvent('open-quick-view', { detail: { product } }));
+                                    }}
+                                    className="h-9 w-9 md:h-10 md:w-10 flex items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 hover:text-rose-600 hover:border-rose-300 transition shrink-0 cursor-pointer shadow-xs"
+                                    title="Quick View"
+                                >
+                                    <Eye className="h-4 w-4" />
+                                </button>
+                            )}
+                        </div>
+                    )}
                     {showBuyNow && !hasVariants && !isOutOfStock && (
                         <Link
                             href={route('checkout.index')}

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowRight, CheckCircle2, ChevronLeft, ChevronRight, ExternalLink, Heart, Play, ShoppingBag, ShoppingCart, Star, Video, X } from 'lucide-react';
+import { ArrowRight, CheckCircle2, ChevronLeft, ChevronRight, ExternalLink, Heart, Play, ShoppingBag, ShoppingCart, Star, Video, X, Eye } from 'lucide-react';
 import ShopLayout from '../Layouts/ShopLayout';
 import { useCart } from '../Contexts/CartContext';
 import { useStoreName } from '../Hooks/useStoreName';
@@ -398,6 +398,8 @@ function RoseFashionProductsSection({ settings = {}, all_products = [], activeCa
 }
 
 function RoseFashionProductCard({ product, onAddToCart }) {
+    const { global_settings = {} } = usePage().props;
+    const showQuickView = global_settings.card_show_quick_view !== 'false';
     const hasVariants = (product.type === 'variable' || product.type === 'option') && product.variants?.length > 0;
 
     const attributesList = useMemo(() => {
@@ -607,13 +609,13 @@ function RoseFashionProductCard({ product, onAddToCart }) {
                     )}
                 </div>
 
-                {/* Add to Bag or Sold Out Button */}
-                <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-slate-100">
+                {/* Add to Bag or Sold Out Button + Quick View Button */}
+                <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-slate-100 flex items-center gap-2">
                     {isOutOfStock ? (
                         <button
                             type="button"
                             disabled
-                            className="w-full justify-center bg-slate-100 text-slate-400 border border-slate-200 text-[11px] sm:text-xs font-bold py-2 rounded-full cursor-not-allowed uppercase tracking-wider flex items-center justify-center"
+                            className="flex-1 justify-center bg-slate-100 text-slate-400 border border-slate-200 text-[11px] sm:text-xs font-bold py-2 rounded-full cursor-not-allowed uppercase tracking-wider flex items-center justify-center"
                         >
                             Sold Out
                         </button>
@@ -625,10 +627,26 @@ function RoseFashionProductCard({ product, onAddToCart }) {
                                 e.stopPropagation();
                                 onAddToCart(product, selectedVariant, 1);
                             }}
-                            className="w-full justify-center bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white text-[11px] sm:text-xs font-semibold px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-full transition duration-300 flex items-center gap-1.5 shadow-xs transform hover:scale-[1.02] cursor-pointer"
+                            className="flex-1 justify-center bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white text-[11px] sm:text-xs font-semibold px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-full transition duration-300 flex items-center gap-1.5 shadow-xs transform hover:scale-[1.01] cursor-pointer"
                         >
                             <ShoppingBag className="w-3.5 h-3.5" />
                             <span>Add to Bag</span>
+                        </button>
+                    )}
+
+                    {showQuickView && (
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                window.dispatchEvent(new CustomEvent('open-quick-view', { detail: { product } }));
+                            }}
+                            title="Quick View"
+                            aria-label="Quick View"
+                            className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 hover:text-rose-600 hover:border-rose-300 hover:bg-rose-50 transition shrink-0 cursor-pointer shadow-xs group/qv"
+                        >
+                            <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover/qv:scale-110 transition-transform" />
                         </button>
                     )}
                 </div>

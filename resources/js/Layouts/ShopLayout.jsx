@@ -34,6 +34,7 @@ import { getWishlistItems, removeWishlistProduct } from '../Services/Wishlist';
 import { compareUrl, getCompareItems } from '../Services/Compare';
 import { Tracker } from '../Services/Tracker';
 import MultipleChatPlugin from '../Components/MultipleChatPlugin';
+import QuickViewModal from '../Components/QuickViewModal';
 const defaultRoseNavItems = [
     { title: 'Home', link: '/', visible: true },
     { title: 'Collections', link: '/main-categories', visible: true },
@@ -91,6 +92,7 @@ export default function ShopLayout({ children, hideMobileBottomNav = false }) {
     const [suggestions, setSuggestions] = useState([]);
     const [notice, setNotice] = useState(null);
     const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+    const [quickViewProduct, setQuickViewProduct] = useState(null);
     const mobileSearchRef = useRef(null);
     const mobileSearchInputRef = useRef(null);
     const headerRef = useRef(null);
@@ -133,13 +135,21 @@ export default function ShopLayout({ children, hideMobileBottomNav = false }) {
             }
         };
 
+        const handleQuickView = (e) => {
+            if (e.detail?.product) {
+                setQuickViewProduct(e.detail.product);
+            }
+        };
+
         window.addEventListener('govaly-cart-event', handleCartEvent);
         window.addEventListener('govaly-toast', handleToastEvent);
+        window.addEventListener('open-quick-view', handleQuickView);
 
         return () => {
             if (timer) clearTimeout(timer);
             window.removeEventListener('govaly-cart-event', handleCartEvent);
             window.removeEventListener('govaly-toast', handleToastEvent);
+            window.removeEventListener('open-quick-view', handleQuickView);
         };
     }, []);
 
@@ -563,6 +573,17 @@ export default function ShopLayout({ children, hideMobileBottomNav = false }) {
 
             {cartOpen && <CartDrawer items={cartItems} subtotal={subtotal} onClose={() => setCartOpen(false)} remove={removeFromCart} update={updateQty} money={money} />}
             {wishlistOpen && <WishlistDrawer items={wishlistItems} onClose={() => setWishlistOpen(false)} onRemove={(id) => { removeWishlistProduct(id); setWishlistItems(getWishlistItems()); }} money={money} />}
+            {quickViewProduct && (
+                <QuickViewModal
+                    product={quickViewProduct}
+                    isOpen={!!quickViewProduct}
+                    onClose={() => setQuickViewProduct(null)}
+                    onAddToCart={(prod, variant, qty) => {
+                        addToCart(prod, variant, qty);
+                    }}
+                    settings={global_settings}
+                />
+            )}
             {menuOpen && (
                 <MobileMenuDrawer
                     open={menuOpen}
