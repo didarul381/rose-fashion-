@@ -265,13 +265,13 @@ function RoseFashionCategoryGrid({ settings = {}, onSelectCategory }) {
                     <p className="text-slate-600 mt-3 text-sm sm:text-base leading-relaxed">{subtitle}</p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
                     {items.map((item, idx) => (
                         <div
                             key={idx}
                             className="group relative bg-slate-50 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition duration-500 border border-slate-100 flex flex-col transform hover:-translate-y-2"
                         >
-                            <div className="h-64 overflow-hidden relative">
+                            <div className="h-36 sm:h-64 overflow-hidden relative">
                                 <img
                                     src={item.image}
                                     alt={item.title}
@@ -279,23 +279,23 @@ function RoseFashionCategoryGrid({ settings = {}, onSelectCategory }) {
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
                                 {item.badge && (
-                                    <span className="absolute top-3 left-3 bg-rose-600/90 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full font-medium">
+                                    <span className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 bg-rose-600/90 backdrop-blur-sm text-white text-[10px] sm:text-xs px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full font-medium">
                                         {item.badge}
                                     </span>
                                 )}
                             </div>
-                            <div className="p-6 flex flex-col flex-grow justify-between">
+                            <div className="p-3.5 sm:p-6 flex flex-col flex-grow justify-between">
                                 <div>
-                                    <h3 className="font-serif text-xl font-bold text-slate-900 group-hover:text-rose-600 transition">
+                                    <h3 className="font-serif text-sm sm:text-xl font-bold text-slate-900 group-hover:text-rose-600 transition line-clamp-1">
                                         {item.title}
                                     </h3>
-                                    <p className="text-slate-600 text-xs sm:text-sm mt-2 leading-relaxed">
+                                    <p className="text-slate-600 text-[11px] sm:text-sm mt-1 sm:mt-2 leading-relaxed line-clamp-2">
                                         {item.subtitle || item.description}
                                     </p>
                                 </div>
                                 <button
                                     onClick={() => onSelectCategory ? onSelectCategory(item.category_slug || item.slug) : null}
-                                    className="mt-6 inline-flex items-center text-sm font-semibold text-rose-600 hover:text-rose-700 group-hover:translate-x-1 transition text-left cursor-pointer"
+                                    className="mt-3 sm:mt-6 inline-flex items-center text-xs sm:text-sm font-semibold text-rose-600 hover:text-rose-700 group-hover:translate-x-1 transition text-left cursor-pointer"
                                 >
                                     <span>
                                         {item.button_text || (
@@ -305,7 +305,7 @@ function RoseFashionCategoryGrid({ settings = {}, onSelectCategory }) {
                                             `View ${item.title}`
                                         )}
                                     </span>
-                                    <ArrowRight className="w-3.5 h-3.5 ml-2" />
+                                    <ArrowRight className="w-3.5 h-3.5 ml-1 sm:ml-2" />
                                 </button>
                             </div>
                         </div>
@@ -338,37 +338,43 @@ function RoseFashionProductsSection({ settings = {}, all_products = [], activeCa
     }, [all_products, activeCategory]);
 
     return (
-        <section id="shop-products" className="py-20 bg-slate-100/70">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
-                    <div>
-                        <span className="text-rose-600 font-semibold text-sm uppercase tracking-widest">{tag}</span>
-                        <h2 className="font-serif text-3xl sm:text-4xl font-bold text-slate-900 mt-2">{title}</h2>
-                    </div>
+        <section id="shop-products" className="pb-20 pt-4 sm:pt-6 bg-slate-100/70 relative">
+            {/* Sticky Section Header & Filter Tabs */}
+            <div className="sticky top-20 z-30 bg-slate-100/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs py-3.5 sm:py-4 mb-6 sm:mb-8 transition-all">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 md:gap-4">
+                        <div>
+                            <span className="text-rose-600 font-semibold text-xs sm:text-sm uppercase tracking-widest">{tag}</span>
+                            <h2 className="font-serif text-2xl sm:text-4xl font-bold text-slate-900 mt-0.5 sm:mt-1">{title}</h2>
+                        </div>
 
-                    {/* Filter Tabs */}
-                    <div className="mt-6 md:mt-0 flex flex-wrap gap-2">
-                        {tabs.map(tab => {
-                            const isActive = (activeCategory === tab.slug) || (!activeCategory && tab.slug === 'all');
-                            return (
-                                <button
-                                    key={tab.slug}
-                                    onClick={() => setActiveCategory(tab.slug)}
-                                    className={`px-5 py-2.5 rounded-full text-xs font-semibold transition transform hover:scale-105 cursor-pointer ${
-                                        isActive
-                                            ? 'bg-rose-600 text-white shadow-md'
-                                            : 'bg-white text-slate-700 hover:bg-rose-50 border border-slate-200'
-                                    }`}
-                                >
-                                    {tab.label}
-                                </button>
-                            );
-                        })}
+                        {/* Filter Tabs (Horizontal Slider on Mobile) */}
+                        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth -mx-4 px-4 sm:mx-0 sm:px-0 md:flex-wrap py-1">
+                            {tabs.map(tab => {
+                                const isActive = (activeCategory === tab.slug) || (!activeCategory && tab.slug === 'all');
+                                return (
+                                    <button
+                                        key={tab.slug}
+                                        onClick={() => setActiveCategory(tab.slug)}
+                                        className={`whitespace-nowrap shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-semibold transition-all transform active:scale-95 hover:scale-105 cursor-pointer ${
+                                            isActive
+                                                ? 'bg-rose-600 text-white shadow-md shadow-rose-200'
+                                                : 'bg-white text-slate-700 hover:bg-rose-50 border border-slate-200 shadow-xs'
+                                        }`}
+                                    >
+                                        {tab.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Product Grid with Dual-Image Hover Effect */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
                     {filteredProducts.length === 0 ? (
                         <div className="col-span-full text-center py-12 text-slate-500">
                             No products found in this category.
@@ -406,7 +412,7 @@ function RoseFashionProductCard({ product, onAddToCart }) {
 
     return (
         <div className="product-card bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition duration-500 border border-slate-100 flex flex-col group transform hover:-translate-y-2">
-            <Link href={route('product.show', { slug: product.slug })} className="h-72 overflow-hidden relative bg-slate-100 cursor-pointer block">
+            <Link href={route('product.show', { slug: product.slug })} className="h-48 sm:h-72 overflow-hidden relative bg-slate-100 cursor-pointer block">
                 {/* Primary Image */}
                 <img
                     src={primaryImg}
@@ -421,45 +427,45 @@ function RoseFashionProductCard({ product, onAddToCart }) {
                 />
 
                 {/* Badges & Discount Tag Container */}
-                <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-1.5 pointer-events-none">
+                <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 z-10 flex flex-col items-start gap-1 sm:gap-1.5 pointer-events-none">
                     {badge && (
-                        <span className="bg-rose-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow">
+                        <span className="bg-rose-600 text-white text-[9px] sm:text-[10px] font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full uppercase tracking-wider shadow">
                             {badge}
                         </span>
                     )}
                     {hasDiscount && (
-                        <span className="bg-rose-700 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow">
+                        <span className="bg-rose-700 text-white text-[9px] sm:text-[10px] font-extrabold px-2 sm:px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow">
                             {discountPercent > 0 ? `-${discountPercent}%` : 'Discount'}
                         </span>
                     )}
                 </div>
             </Link>
 
-            <div className="p-6 flex flex-col flex-grow justify-between bg-white">
+            <div className="p-3 sm:p-6 flex flex-col flex-grow justify-between bg-white">
                 <div>
-                    <span className="text-xs uppercase tracking-wider text-rose-600 font-semibold">{categoryName}</span>
+                    <span className="text-[10px] sm:text-xs uppercase tracking-wider text-rose-600 font-semibold truncate block">{categoryName}</span>
                     <Link href={route('product.show', { slug: product.slug })}>
-                        <h3 className="font-serif text-lg font-bold text-slate-900 mt-1 group-hover:text-rose-600 transition line-clamp-1">
+                        <h3 className="font-serif text-xs sm:text-lg font-bold text-slate-900 mt-1 group-hover:text-rose-600 transition line-clamp-2 leading-snug">
                             {product.name}
                         </h3>
                     </Link>
                 </div>
-                <div className="mt-4 flex items-center justify-between pt-4 border-t border-slate-100">
-                    <div className="flex items-baseline gap-2">
-                        <span className="text-lg font-bold text-slate-900">
+                <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row sm:items-center justify-between pt-2.5 sm:pt-4 border-t border-slate-100 gap-2 sm:gap-0">
+                    <div className="flex flex-wrap items-baseline gap-1 sm:gap-2">
+                        <span className="text-sm sm:text-lg font-bold text-slate-900">
                             ৳ {Number(currentPrice).toLocaleString()}
                         </span>
                         {hasDiscount && (
-                            <span className="text-xs font-semibold text-slate-400 line-through">
+                            <span className="text-[10px] sm:text-xs font-semibold text-slate-400 line-through">
                                 ৳ {Number(originalPrice).toLocaleString()}
                             </span>
                         )}
                     </div>
                     <button
                         onClick={() => onAddToCart(product)}
-                        className="bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white text-xs font-semibold px-4 py-2.5 rounded-full transition duration-300 flex items-center gap-1.5 shadow-sm transform hover:scale-105 cursor-pointer shrink-0"
+                        className="w-full sm:w-auto justify-center bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white text-[11px] sm:text-xs font-semibold px-2.5 sm:px-4 py-1.5 sm:py-2.5 rounded-full transition duration-300 flex items-center gap-1.5 shadow-xs transform hover:scale-105 cursor-pointer shrink-0"
                     >
-                        <ShoppingBag className="w-3.5 h-3.5" />
+                        <ShoppingBag className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                         <span>Add to Bag</span>
                     </button>
                 </div>

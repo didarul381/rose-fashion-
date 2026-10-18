@@ -230,6 +230,15 @@ export default function ShopLayout({ children, hideMobileBottomNav = false }) {
     useEffect(() => {
         if (!mobileSearchOpen) return;
         window.setTimeout(() => mobileSearchInputRef.current?.focus(), 80);
+
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                setMobileSearchOpen(false);
+                setSuggestions([]);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
     }, [mobileSearchOpen]);
 
     const submitSearch = (event) => {
@@ -445,26 +454,49 @@ export default function ShopLayout({ children, hideMobileBottomNav = false }) {
 
 
             {mobileSearchOpen && (
-                <div className="fixed inset-0 z-[72] bg-white md:hidden">
-                    <div ref={mobileSearchRef} className="flex h-full flex-col" onClick={(e) => e.stopPropagation()}>
-                        <div className="sticky top-0 z-10 border-b border-slate-100 bg-white/95 px-4 pb-3 pt-4 shadow-sm backdrop-blur">
-                            <div className="flex items-center gap-2">
-                                <form onSubmit={submitSearch} className="flex h-12 min-w-0 flex-1 items-center overflow-hidden rounded-full border border-slate-200 bg-slate-50 px-3 transition focus-within:border-[#102f58] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#102f58]/10">
+                <div
+                    className="fixed inset-0 z-[80] bg-slate-950/60 backdrop-blur-xs flex flex-col md:items-center md:justify-start md:p-6 md:pt-20 transition-all duration-200"
+                    onClick={() => { setMobileSearchOpen(false); setSuggestions([]); }}
+                >
+                    <div
+                        ref={mobileSearchRef}
+                        className="flex h-full w-full flex-col bg-white md:h-auto md:max-h-[80vh] md:max-w-2xl md:rounded-3xl md:shadow-2xl md:border md:border-slate-100 overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="sticky top-0 z-10 border-b border-slate-100 bg-white/95 px-4 pb-3 pt-4 shadow-xs backdrop-blur md:px-6 md:py-4">
+                            <div className="flex items-center gap-3">
+                                <form onSubmit={submitSearch} className="flex h-12 min-w-0 flex-1 items-center overflow-hidden rounded-full border border-slate-200 bg-slate-50 px-3.5 transition focus-within:border-rose-600 focus-within:bg-white focus-within:ring-2 focus-within:ring-rose-600/10">
                                     <Search className="h-5 w-5 shrink-0 text-slate-400" strokeWidth={2.2} />
-                                    <input ref={mobileSearchInputRef} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search products..." className="min-w-0 flex-1 border-0 bg-transparent px-3 text-[15px] font-medium text-slate-900 outline-none ring-0 placeholder:text-slate-400 focus:ring-0" />
+                                    <input
+                                        ref={mobileSearchInputRef}
+                                        value={query}
+                                        onChange={(e) => setQuery(e.target.value)}
+                                        placeholder="Search sarees, lehengas, bridal collection..."
+                                        className="min-w-0 flex-1 border-0 bg-transparent px-3 text-[15px] font-medium text-slate-900 outline-none ring-0 placeholder:text-slate-400 focus:ring-0"
+                                    />
                                     {query && (
-                                        <button type="button" onClick={() => { setQuery(''); setSuggestions([]); }} className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-slate-200/70 text-slate-500" aria-label="Clear search">
+                                        <button
+                                            type="button"
+                                            onClick={() => { setQuery(''); setSuggestions([]); }}
+                                            className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-slate-200/70 text-slate-500 hover:bg-slate-200"
+                                            aria-label="Clear search"
+                                        >
                                             <X className="h-4 w-4" strokeWidth={2.5} />
                                         </button>
                                     )}
                                 </form>
-                                <button type="button" onClick={() => { setMobileSearchOpen(false); setSuggestions([]); }} className="shrink-0 rounded-full px-2 py-2 text-sm font-bold text-slate-600" aria-label="Close search">
+                                <button
+                                    type="button"
+                                    onClick={() => { setMobileSearchOpen(false); setSuggestions([]); }}
+                                    className="shrink-0 rounded-full px-3 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 transition"
+                                    aria-label="Close search"
+                                >
                                     Cancel
                                 </button>
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto px-4 py-4">
+                        <div className="flex-1 overflow-y-auto px-4 py-4 md:px-6">
                             <div className="mb-3 flex items-center justify-between">
                                 <div>
                                     <h3 className="text-base font-extrabold text-slate-900">Search products</h3>
@@ -474,12 +506,12 @@ export default function ShopLayout({ children, hideMobileBottomNav = false }) {
                             </div>
                             <SearchSuggestions suggestions={suggestions} money={money} onSelect={() => { setSuggestions([]); setMobileSearchOpen(false); }} mobile />
                             {query && suggestions.length === 0 && (
-                                <div className="mt-10 text-center">
+                                <div className="py-12 text-center">
                                     <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-slate-100 text-slate-400">
                                         <Search className="h-6 w-6" />
                                     </div>
-                                    <p className="mt-3 text-sm font-bold text-slate-700">No products found</p>
-                                    <p className="mt-1 text-xs text-slate-400">Try another keyword or category.</p>
+                                    <p className="mt-3 text-sm font-bold text-slate-700">No products found for "{query}"</p>
+                                    <p className="mt-1 text-xs text-slate-400">Try searching for Jamdani, Lehenga, Silk, etc.</p>
                                 </div>
                             )}
                         </div>
