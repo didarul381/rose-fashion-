@@ -294,9 +294,15 @@ class MarketingIntegrationRegistry
         $config = static::currentConfig($integrationKey);
 
         foreach ($integration['secret_fields'] as $field => $meta) {
-            $hasValue = !empty($config[$field]);
-            $config[$field] = $hasValue ? '********' : '';
+            $val = (string) ($config[$field] ?? '');
+            $hasValue = !empty($val);
             $config[$field . '_is_set'] = $hasValue;
+            if ($hasValue && strlen($val) > 10) {
+                $config[$field . '_preview'] = substr($val, 0, 7) . '••••••••••••••••' . substr($val, -4);
+            } else {
+                $config[$field . '_preview'] = $hasValue ? '••••••••••••••••' : '';
+            }
+            $config[$field] = '';
         }
 
         $config['enabled'] = filter_var($config['enabled'] ?? false, FILTER_VALIDATE_BOOL);

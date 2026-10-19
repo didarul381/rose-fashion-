@@ -15,6 +15,9 @@ import {
     ShieldPlus,
     Video,
     Megaphone,
+    Eye,
+    EyeOff,
+    Lock,
 } from 'lucide-react';
 
 const iconMap = {
@@ -182,18 +185,29 @@ export default function MarketingIntegration({ integration, integration_groups =
                                 );
                             })}
 
-                            {Object.entries(integration.secret_fields || {}).map(([field, meta]) => (
-                                <Field
-                                    key={field}
-                                    label={meta.label || field}
-                                    value={saveForm.data[field] ?? ''}
-                                    type="password"
-                                    placeholder={meta.placeholder || 'Stored securely'}
-                                    description="Leave blank to keep the current secret. The value is encrypted at rest."
-                                    onChange={(nextValue) => saveForm.setData(field, nextValue)}
-                                    secure
-                                />
-                            ))}
+                            {Object.entries(integration.secret_fields || {}).map(([field, meta]) => {
+                                const isSet = !!integration.config?.[`${field}_is_set`];
+                                const preview = integration.config?.[`${field}_preview`] || '';
+
+                                return (
+                                    <Field
+                                        key={field}
+                                        label={meta.label || field}
+                                        value={saveForm.data[field] ?? ''}
+                                        type="password"
+                                        placeholder={isSet ? '••••••••••••••••••••••••••••••••' : (meta.placeholder || 'Paste access token here')}
+                                        description={
+                                            isSet
+                                                ? 'A secret token is already saved and active in the database. Leave blank to keep it, or paste a new token here to update it.'
+                                                : 'Leave blank to keep the current secret. The value is encrypted at rest.'
+                                        }
+                                        onChange={(nextValue) => saveForm.setData(field, nextValue)}
+                                        secure
+                                        isConfigured={isSet}
+                                        preview={preview}
+                                    />
+                                );
+                            })}
                         </div>
 
                         <div className="mt-6 flex flex-col gap-3 border-t border-slate-100 pt-5 md:flex-row md:items-center md:justify-between">
@@ -264,7 +278,9 @@ function buildInitialValues(integration) {
     return values;
 }
 
-function Field({ label, value, type, placeholder, description, onChange, secure = false }) {
+function Field({ label, value, type, placeholder, description, onChange, secure = false, isConfigured = false, preview = '' }) {
+    const [showPlain, setShowPlain] = useState(false);
+
     if (type === 'checkbox') {
         return (
             <label className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
@@ -283,17 +299,52 @@ function Field({ label, value, type, placeholder, description, onChange, secure 
     }
 
     return (
-        <label className={`rounded-2xl border ${secure ? 'border-emerald-100 bg-emerald-50/40' : 'border-slate-100 bg-slate-50'} p-4`}>
-            <div className="text-sm font-bold text-slate-900">{label}</div>
-            <input
-                type={type}
-                value={value}
-                placeholder={placeholder}
-                onChange={(e) => onChange(e.target.value)}
-                className="mt-3 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
-            />
+        <div className={`rounded-2xl border ${secure ? 'border-emerald-200/80 bg-emerald-50/20' : 'border-slate-100 bg-slate-50'} p-4`}>
+            <div className="flex items-center justify-between">
+                <label className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    {secure && <Lock className="w-3.5 h-3.5 text-emerald-600" />}
+                    <span>{label}</span>
+                </label>
+                {secure && isConfigured && (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-100/80 border border-emerald-300/80 px-2.5 py-0.5 rounded-full shadow-2xs">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Saved & Active</span>
+                    </span>
+                )}
+            </div>
+
+            {secure && isConfigured && (
+                <div className="mt-2.5 flex items-center justify-between gap-2 rounded-xl border border-emerald-200 bg-emerald-50/70 px-3 py-2 text-xs">
+                    <span className="text-[11px] font-medium text-emerald-800">
+                        Current Token:
+                    </span>
+                    <span className="font-mono text-[11px] font-bold text-slate-700 bg-white px-2.5 py-0.5 rounded border border-emerald-200 shadow-xs">
+                        {preview || '••••••••••••••••'}
+                    </span>
+                </div>
+            )}
+
+            <div className="relative mt-2.5">
+                <input
+                    type={secure ? (showPlain ? 'text' : 'password') : type}
+                    value={value}
+                    placeholder={placeholder}
+                    onChange={(e) => onChange(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 pr-10 text-sm text-slate-800 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 font-mono"
+                />
+                {secure && (
+                    <button
+                        type="button"
+                        onClick={() => setShowPlain(!showPlain)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition p-1 cursor-pointer"
+                        title={showPlain ? "Hide input" : "Show input"}
+                    >
+                        {showPlain ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                )}
+            </div>
             <div className="mt-2 text-[11px] leading-5 text-slate-500">{description}</div>
-        </label>
+        </div>
     );
 }
 
