@@ -25,6 +25,7 @@ use App\Http\Controllers\CustomerDashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\SizeChartController;
+use App\Http\Controllers\TrackingController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -59,6 +60,7 @@ Route::get('/cart', fn () => Inertia::render('Shop/Cart'))->name('cart.index');
 */
 Route::post('/api/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('api.cart.coupon');
 Route::post('/api/cart/shipping', [CartController::class, 'calculateShipping'])->name('api.cart.shipping');
+Route::post('/api/tracking/event', [TrackingController::class, 'trackEvent'])->name('api.tracking.event');
 
 /*
 |--------------------------------------------------------------------------

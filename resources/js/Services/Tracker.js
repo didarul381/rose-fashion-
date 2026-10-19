@@ -173,19 +173,75 @@ export const Tracker = {
         }
     },
 
-    track(eventName, data = {}, eventId = null) {
+    generateEventId(prefix = 'evt') {
+        return `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    },
+
+    sendServerEvent(eventName, payload = {}, eventId = null) {
+        try {
+            const data = {
+                event_name: eventName,
+                event_id: eventId,
+                custom_data: payload,
+                source_url: typeof window !== 'undefined' ? window.location.href : '',
+            };
+
+            const url = typeof route === 'function' ? route('api.tracking.event') : '/api/tracking/event';
+            const body = JSON.stringify(data);
+
+            if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+                const blob = new Blob([body], { type: 'application/json' });
+                navigator.sendBeacon(url, blob);
+            } else if (typeof fetch === 'function') {
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body,
+                    keepalive: true,
+                }).catch(() => {});
+            }
+        } catch {
+            // Silently ignore tracking network issues
+        }
+    },
+
+    trackPageView(url = null, eventId = null) {
+        const id = eventId || this.generateEventId('evt_pv');
+        if (window.fbq) {
+            window.fbq('track', 'PageView', {}, { eventID: id });
+        }
+        if (window.gtag) {
+            window.gtag('event', 'page_view', { page_location: url || (typeof window !== 'undefined' ? window.location.href : '') });
+        }
+        this.sendServerEvent('PageView', {}, id);
+        this.trackCustom('PageView', { url: url || (typeof window !== 'undefined' ? window.location.href : '') });
+    },
+
+    track(eventName, data = {}, eventId = null, serverAlreadyDispatched = false) {
+        const prefix = eventName.replace(/[^a-zA-Z0-9]/g, '').substring(0, 4).toLowerCase();
+        const finalEventId = eventId || this.generateEventId(`evt_${prefix}`);
         const payload = { ...data };
 
         if (eventName === 'view_item') {
-            this.dispatchBrowserEvent('view_item', payload, eventId);
+            this.dispatchBrowserEvent('view_item', payload, finalEventId);
         } else if (eventName === 'add_to_cart') {
-            this.dispatchBrowserEvent('add_to_cart', payload, eventId);
+            this.dispatchBrowserEvent('add_to_cart', payload, finalEventId);
         } else if (eventName === 'begin_checkout') {
-            this.dispatchBrowserEvent('begin_checkout', payload, eventId);
+            this.dispatchBrowserEvent('begin_checkout', payload, finalEventId);
         } else if (eventName === 'purchase') {
-            this.dispatchBrowserEvent('purchase', payload, eventId);
+            this.dispatchBrowserEvent('purchase', payload, finalEventId);
         } else if (eventName === 'lead') {
-            this.dispatchBrowserEvent('lead', payload, eventId);
+            this.dispatchBrowserEvent('lead', payload, finalEventId);
+        }
+
+        // Send server-side event for hybrid deduplication unless server already sent it
+        if (!serverAlreadyDispatched) {
+            const metaEvent = this.metaEventName(eventName);
+            const metaPayload = this.buildMetaPayload(eventName, payload);
+            this.sendServerEvent(metaEvent, metaPayload, finalEventId);
         }
 
         this.trackCustom(eventName, payload);
@@ -210,7 +266,7 @@ export const Tracker = {
             }],
         };
 
-        this.track('view_item', payload, eventId);
+        this.track('view_item', payload, eventId, Boolean(eventId));
     },
 
     trackAddToCart(product, quantity = 1, eventId = null) {
@@ -230,7 +286,7 @@ export const Tracker = {
             }],
         };
 
-        this.track('add_to_cart', payload, eventId);
+        this.track('add_to_cart', payload, eventId, false);
     },
 
     trackInitiateCheckout(cartItems, subtotal, eventId = null) {
@@ -248,7 +304,7 @@ export const Tracker = {
             })),
         };
 
-        this.track('begin_checkout', payload, eventId);
+        this.track('begin_checkout', payload, eventId, false);
     },
 
     trackPurchase(order, items = [], eventId = null) {
@@ -269,7 +325,8 @@ export const Tracker = {
             })),
         };
 
-        this.track('purchase', payload, eventId);
+        // Purchase is already triggered server-side on order creation
+        this.track('purchase', payload, eventId, true);
     },
 
     trackLead(type, detail = {}) {

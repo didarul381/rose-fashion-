@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import {
     ArrowLeft,
@@ -29,6 +29,7 @@ const iconMap = {
 };
 
 export default function MarketingIntegration({ integration, integration_groups = [], user_count = 0 }) {
+    const { flash } = usePage().props;
     const [isEnabled, setIsEnabled] = useState(!!integration.enabled);
 
     const saveForm = useForm({
@@ -135,6 +136,25 @@ export default function MarketingIntegration({ integration, integration_groups =
                 </aside>
 
                 <main className="space-y-6">
+                    {flash?.success && (
+                        <div className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-semibold text-emerald-800 shadow-sm">
+                            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 mt-0.5" />
+                            <div className="flex-1 leading-5">{flash.success}</div>
+                        </div>
+                    )}
+                    {flash?.warning && (
+                        <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs font-semibold text-amber-800 shadow-sm">
+                            <AlertCircle className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
+                            <div className="flex-1 leading-5">{flash.warning}</div>
+                        </div>
+                    )}
+                    {flash?.error && (
+                        <div className="flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-semibold text-rose-800 shadow-sm">
+                            <AlertCircle className="h-4 w-4 shrink-0 text-rose-600 mt-0.5" />
+                            <div className="flex-1 leading-5">{flash.error}</div>
+                        </div>
+                    )}
+
                     <section className="rounded-3xl border border-emerald-100 bg-white p-6 md:p-8 shadow-sm">
                         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                             <div className="max-w-2xl">

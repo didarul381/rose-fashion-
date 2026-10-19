@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         
         <!-- SEO Meta Tags -->
         <meta name="robots" content="index, follow">
@@ -96,6 +97,16 @@
             $gaTrackingId = \App\Services\Marketing\MarketingIntegrationRegistry::readValue('google_analytics_4', 'measurement_id', \App\Models\Setting::get('google_analytics_id'));
             $fbPixelId = \App\Services\Marketing\MarketingIntegrationRegistry::readValue('meta_pixel', 'pixel_id', \App\Models\Setting::get('facebook_pixel_id') ?: \App\Models\Setting::get('meta_pixel_id'));
             $tiktokPixelId = \App\Services\Marketing\MarketingIntegrationRegistry::readValue('tiktok_pixel', 'pixel_id', \App\Models\Setting::get('tiktok_pixel_id'));
+            $metaCapiEnabled = \App\Services\Marketing\MarketingIntegrationRegistry::isEnabled('meta_conversions_api');
+            $initialPageViewId = 'evt_pv_' . uniqid('', true);
+            if ($metaCapiEnabled) {
+                \App\Jobs\SendMetaCapiEvent::dispatch('PageView', [
+                    'ip' => request()->ip(),
+                    'user_agent' => request()->header('User-Agent'),
+                    'email' => auth()->user()?->email,
+                    'phone' => auth()->user()?->phone,
+                ], [], $initialPageViewId);
+            }
         @endphp
 
         <!-- Server-Side Tracking Pixels Integration -->
@@ -122,7 +133,7 @@
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
             fbq('init', '{{ $fbPixelId }}');
-            fbq('track', 'PageView');
+            fbq('track', 'PageView', {}, { eventID: '{{ $initialPageViewId }}' });
             </script>
             <noscript><img height="1" width="1" style="display:none"
             src="https://www.facebook.com/tr?id={{ $fbPixelId }}&ev=PageView&noscript=1"

@@ -114,16 +114,30 @@ class MarketingController extends Controller
         abort_if(! $definition, 404);
 
         if ($integration === 'meta_conversions_api') {
-            MetaCapiService::sendEvent('Lead', [
+            $testCode = $request->input('test_event_code') ?: MarketingIntegrationRegistry::readValue('meta_conversions_api', 'test_event_code');
+            if ($request->filled('test_event_code')) {
+                MarketingIntegrationRegistry::writeValue('meta_conversions_api', 'test_event_code', trim($request->input('test_event_code')));
+            }
+
+            $result = MetaCapiService::sendEventDetailed('Lead', [
                 'email' => $request->user()?->email,
                 'ip' => $request->ip(),
                 'user_agent' => $request->header('User-Agent'),
             ], [
                 'value' => 0,
                 'currency' => 'BDT',
-            ], 'test_'.now()->timestamp);
+            ], 'test_'.now()->timestamp, $testCode);
 
-            return back()->with('success', 'Meta CAPI test event dispatched.');
+            if (! $result['success']) {
+                return back()->with('error', 'Meta CAPI Error: '.($result['error'] ?? 'Failed to send event to Meta.'));
+            }
+
+            if (! empty($result['messages'])) {
+                $warningMsg = implode(' ', $result['messages']);
+                return back()->with('warning', "Meta CAPI event received by Meta, but note: {$warningMsg}");
+            }
+
+            return back()->with('success', 'Meta CAPI test event delivered successfully! Events received by Meta: '.($result['events_received'] ?? 1));
         }
 
         if ($integration === 'tiktok_events_api') {

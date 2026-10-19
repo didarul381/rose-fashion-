@@ -226,13 +226,19 @@ export default function ShopLayout({ children, hideMobileBottomNav = false }) {
         return () => clearTimeout(timer);
     }, [flash]);
 
+    const isFirstNav = useRef(true);
     useEffect(() => {
         Tracker.init(global_settings);
-        const unsubscribe = router.on('navigate', () => { 
+        const unsubscribe = router.on('navigate', (event) => { 
             setMenuOpen(false); 
             setCartOpen(false); 
             setWishlistOpen(false); 
             setMobileSearchOpen(false); 
+            if (isFirstNav.current) {
+                isFirstNav.current = false;
+            } else {
+                Tracker.trackPageView(event?.detail?.page?.url);
+            }
         });
         return () => unsubscribe();
     }, [global_settings]);
