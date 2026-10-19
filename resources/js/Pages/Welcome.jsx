@@ -17,7 +17,7 @@ export default function Welcome({ sections = [], settings = {}, home_categories 
         const varLabel = variant?.attribute_values?.length
             ? ` (${variant.attribute_values.map(av => av.value).join(', ')})`
             : (variant?.sku ? ` (${variant.sku})` : '');
-        setToastMessage(`Added "${product.name}${varLabel}" to shopping bag!`);
+        setToastMessage(`Added "${product.name}${varLabel}" to cart!`);
     };
 
     useEffect(() => {
@@ -394,6 +394,7 @@ function RoseFashionProductsSection({ settings = {}, all_products = [], activeCa
                                 key={product.id}
                                 product={product}
                                 onAddToCart={onAddToCart}
+                                settings={settings}
                             />
                         ))
                     )}
@@ -403,9 +404,69 @@ function RoseFashionProductsSection({ settings = {}, all_products = [], activeCa
     );
 }
 
-function RoseFashionProductCard({ product, onAddToCart }) {
+function RoseFashionProductCard({ product, onAddToCart, settings: propSettings = {} }) {
     const { global_settings = {} } = usePage().props;
-    const showQuickView = global_settings.card_show_quick_view !== 'false';
+    const settings = { ...global_settings, ...propSettings };
+
+    const enabled = (key, fallback = true) => {
+        if (settings[key] === undefined || settings[key] === null || settings[key] === '') return fallback;
+        return String(settings[key]) !== 'false';
+    };
+
+    const radiusMap = {
+        'square': 'rounded-none',
+        'rounded-none': 'rounded-none',
+        'rounded-sm': 'rounded-sm',
+        'rounded-md': 'rounded-md',
+        'rounded-lg': 'rounded-lg',
+        'rounded-xl': 'rounded-xl',
+        'rounded-2xl': 'rounded-2xl',
+        'rounded-3xl': 'rounded-3xl',
+        'rounded-full': 'rounded-full'
+    };
+
+    const shadowMap = {
+        none: 'shadow-none',
+        sm: 'shadow-sm',
+        md: 'shadow-md',
+        lg: 'shadow-lg',
+        xl: 'shadow-xl'
+    };
+
+    const cardRadiusClass = radiusMap[settings.card_radius] || 'rounded-2xl';
+    const cardShadowClass = shadowMap[settings.card_shadow] || 'shadow-xs';
+
+    // Toggles
+    const showQuickView = enabled('card_show_quick_view', true);
+    const showAddToCart = enabled('card_show_add_to_cart', true);
+    const showBuyNow = enabled('card_show_buy_now', false);
+    const showViewButton = enabled('card_show_view_button', false);
+    const showCategory = enabled('card_show_category', true);
+    const showDiscountBadge = enabled('card_show_discount_badge', true);
+    const showCustomBadge = enabled('card_show_custom_badge', true);
+    const showOldPrice = enabled('card_show_old_price', true);
+
+    // Color definitions
+    const cardBgColor = settings.card_bg_color || '#ffffff';
+    const cardBorderColor = settings.card_border_color || '#e2e8f0';
+    const titleColor = settings.card_title_color || '#0f172a';
+    const priceColor = settings.card_price_color || settings.primary_color || '#c2005f';
+    const oldPriceColor = settings.card_old_price_color || '#94a3b8';
+
+    const badgeBgColor = settings.card_badge_bg_color || '#dc2626';
+    const badgeTextColor = settings.card_badge_text_color || '#ffffff';
+    const customBadgeBgColor = settings.card_custom_badge_bg_color || settings.primary_color || '#e11d48';
+    const customBadgeTextColor = settings.card_custom_badge_text_color || '#ffffff';
+
+    const btnAddToCartBg = settings.card_button_bg_color || settings.primary_color || '#f94c1a';
+    const btnAddToCartText = settings.card_button_text_color || '#ffffff';
+    const btnSelectOptionBg = settings.card_select_option_bg_color || btnAddToCartBg;
+    const btnSelectOptionText = settings.card_select_option_text_color || btnAddToCartText;
+    const btnBuyNowBg = settings.card_buy_now_bg_color || '#27d81a';
+    const btnBuyNowText = settings.card_buy_now_text_color || '#ffffff';
+    const btnViewBg = settings.card_secondary_button_bg_color || '#f8fafc';
+    const btnViewText = settings.card_secondary_button_text_color || '#0f172a';
+
     const hasVariants = (product.type === 'variable' || product.type === 'option') && product.variants?.length > 0;
 
     const attributesList = useMemo(() => {
@@ -520,52 +581,87 @@ function RoseFashionProductCard({ product, onAddToCart }) {
         : 0;
 
     return (
-        <div className="product-card bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition duration-500 border border-slate-100 flex flex-col group transform hover:-translate-y-2">
-            <Link href={route('product.show', { slug: product.slug })} className="h-52 sm:h-72 overflow-hidden relative bg-slate-100 cursor-pointer block">
-                {/* Primary Image */}
-                <img
-                    src={primaryImg}
-                    alt={product.name}
-                    className="img-primary absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
-                />
-                {/* Secondary Image for Dual-Image Hover Preview */}
-                <img
-                    src={secondaryImg}
-                    alt={`${product.name} alternate view`}
-                    className="img-secondary absolute inset-0 w-full h-full object-cover"
-                />
+        <div 
+            className={`product-card ${cardRadiusClass} overflow-hidden ${cardShadowClass} hover:shadow-xl transition duration-500 border flex flex-col h-full group transform hover:-translate-y-1`}
+            style={{ backgroundColor: cardBgColor, borderColor: cardBorderColor }}
+        >
+            <div className="h-52 sm:h-72 overflow-hidden relative bg-slate-100 block group/img">
+                <Link href={route('product.show', { slug: product.slug })} className="absolute inset-0 block">
+                    {/* Primary Image */}
+                    <img
+                        src={primaryImg}
+                        alt={product.name}
+                        className="img-primary absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
+                    />
+                    {/* Secondary Image for Dual-Image Hover Preview */}
+                    <img
+                        src={secondaryImg}
+                        alt={`${product.name} alternate view`}
+                        className="img-secondary absolute inset-0 w-full h-full object-cover"
+                    />
+                </Link>
 
                 {/* Badges & Discount Tag Container */}
                 <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 z-10 flex flex-col items-start gap-1 sm:gap-1.5 pointer-events-none">
-                    {badge && (
-                        <span className="bg-rose-600 text-white text-[9px] sm:text-[10px] font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full uppercase tracking-wider shadow">
+                    {showCustomBadge && badge && (
+                        <span 
+                            className="text-[9px] sm:text-[10px] font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full uppercase tracking-wider shadow"
+                            style={{ backgroundColor: customBadgeBgColor, color: customBadgeTextColor }}
+                        >
                             {badge}
                         </span>
                     )}
-                    {hasDiscount && (
-                        <span className="bg-rose-700 text-white text-[9px] sm:text-[10px] font-extrabold px-2 sm:px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow">
+                    {showDiscountBadge && hasDiscount && (
+                        <span 
+                            className="text-[9px] sm:text-[10px] font-extrabold px-2 sm:px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow"
+                            style={{ backgroundColor: badgeBgColor, color: badgeTextColor }}
+                        >
                             {discountPercent > 0 ? `-${discountPercent}%` : 'Discount'}
                         </span>
                     )}
                 </div>
-            </Link>
 
-            <div className="p-3 sm:p-5 flex flex-col flex-grow justify-between bg-white">
+                {/* Modern Floating Quick View Button */}
+                {showQuickView && (
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.dispatchEvent(new CustomEvent('open-quick-view', { detail: { product } }));
+                        }}
+                        title="Quick View"
+                        aria-label="Quick View"
+                        className="absolute right-2.5 top-2.5 z-20 h-8.5 w-8.5 sm:h-9 sm:w-9 rounded-full bg-white/95 hover:bg-white text-slate-700 hover:text-rose-600 shadow-md backdrop-blur-xs flex items-center justify-center transition-all duration-200 transform active:scale-90 hover:scale-110 cursor-pointer group/qv"
+                    >
+                        <Eye className="w-4 h-4 group-hover/qv:scale-110 transition-transform" />
+                    </button>
+                )}
+            </div>
+
+            <div className="p-3.5 sm:p-5 pb-4 sm:pb-5 flex flex-col flex-1 justify-between" style={{ backgroundColor: cardBgColor }}>
                 <div>
-                    <span className="text-[10px] sm:text-xs uppercase tracking-wider text-rose-600 font-semibold truncate block">{categoryName}</span>
+                    {showCategory && (
+                        <span className="text-[10px] sm:text-xs uppercase tracking-wider font-semibold truncate block" style={{ color: btnAddToCartBg }}>
+                            {categoryName}
+                        </span>
+                    )}
                     <Link href={route('product.show', { slug: product.slug })}>
-                        <h3 className="font-serif text-xs sm:text-lg font-bold text-slate-900 mt-1 group-hover:text-rose-600 transition line-clamp-2 leading-snug">
+                        <h3 
+                            className="font-serif text-xs sm:text-lg font-bold mt-1 group-hover:opacity-80 transition line-clamp-2 leading-snug"
+                            style={{ color: titleColor }}
+                        >
                             {product.name}
                         </h3>
                     </Link>
 
                     {/* Price */}
                     <div className="mt-2 flex flex-wrap items-baseline gap-1 sm:gap-2">
-                        <span className="text-sm sm:text-lg font-bold text-slate-900">
+                        <span className="text-sm sm:text-lg font-bold" style={{ color: priceColor }}>
                             ৳ {Number(currentPrice).toLocaleString()}
                         </span>
-                        {hasDiscount && (
-                            <span className="text-[10px] sm:text-xs font-semibold text-slate-400 line-through">
+                        {showOldPrice && hasDiscount && (
+                            <span className="text-[10px] sm:text-xs font-semibold line-through" style={{ color: oldPriceColor }}>
                                 ৳ {Number(originalPrice).toLocaleString()}
                             </span>
                         )}
@@ -592,11 +688,12 @@ function RoseFashionProductCard({ product, onAddToCart }) {
                                                     disabled={outOfStock}
                                                     className={`min-w-[26px] sm:min-w-[28px] h-6 sm:h-7 px-1.5 sm:px-2 flex items-center justify-center text-[9.5px] sm:text-[11px] font-bold rounded uppercase transition-all cursor-pointer ${
                                                         isSelected
-                                                            ? 'bg-rose-600 text-white border border-rose-600 shadow-xs'
+                                                            ? 'shadow-xs'
                                                             : outOfStock
                                                                 ? 'bg-slate-50 text-slate-300 border border-slate-200 line-through cursor-not-allowed opacity-50'
-                                                                : 'bg-white text-slate-700 border border-slate-200 hover:border-rose-400 hover:text-rose-600'
+                                                                : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-400'
                                                     }`}
+                                                    style={isSelected ? { backgroundColor: btnSelectOptionBg, color: btnSelectOptionText, borderColor: btnSelectOptionBg } : {}}
                                                     title={`${attr.name}: ${val}${outOfStock ? ' (Out of stock)' : ''}`}
                                                 >
                                                     {val}
@@ -615,47 +712,68 @@ function RoseFashionProductCard({ product, onAddToCart }) {
                     )}
                 </div>
 
-                {/* Add to Bag or Sold Out Button + Quick View Button */}
-                <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-slate-100 flex items-center gap-2">
-                    {isOutOfStock ? (
-                        <button
-                            type="button"
-                            disabled
-                            className="flex-1 justify-center bg-slate-100 text-slate-400 border border-slate-200 text-[11px] sm:text-xs font-bold py-2 rounded-full cursor-not-allowed uppercase tracking-wider flex items-center justify-center"
-                        >
-                            Sold Out
-                        </button>
-                    ) : (
-                        <button
-                            type="button"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                onAddToCart(product, selectedVariant, 1);
-                            }}
-                            className="flex-1 justify-center bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white text-[11px] sm:text-xs font-semibold px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-full transition duration-300 flex items-center gap-1.5 shadow-xs transform hover:scale-[1.01] cursor-pointer"
-                        >
-                            <ShoppingBag className="w-3.5 h-3.5" />
-                            <span>Add to Bag</span>
-                        </button>
-                    )}
+                {/* Add to Cart / Buy Now / View Details Action Buttons */}
+                {(showAddToCart || showBuyNow || showViewButton) && (
+                    <div className="mt-3.5 sm:mt-4 pt-2.5 sm:pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full">
+                        {/* Add To Cart */}
+                        {showAddToCart && (
+                            isOutOfStock ? (
+                                <button
+                                    type="button"
+                                    disabled
+                                    className="w-full sm:flex-1 min-w-0 justify-center bg-slate-100 text-slate-400 border border-slate-200 text-xs font-bold h-9 sm:h-10 rounded-full cursor-not-allowed uppercase tracking-wider flex items-center justify-center whitespace-nowrap px-3"
+                                >
+                                    Sold Out
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        onAddToCart(product, selectedVariant, 1);
+                                    }}
+                                    title="Add To Cart"
+                                    aria-label="Add To Cart"
+                                    className="w-full sm:flex-1 min-w-0 justify-center hover:opacity-95 text-xs font-bold px-3 h-9 sm:h-10 rounded-full transition-all duration-200 flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer whitespace-nowrap group/btn"
+                                    style={{ backgroundColor: btnAddToCartBg, color: btnAddToCartText }}
+                                >
+                                    <ShoppingBag className="w-4 h-4 shrink-0 transition-transform group-hover/btn:scale-110" />
+                                    <span className="whitespace-nowrap font-bold">Add To Cart</span>
+                                </button>
+                            )
+                        )}
 
-                    {showQuickView && (
-                        <button
-                            type="button"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                window.dispatchEvent(new CustomEvent('open-quick-view', { detail: { product } }));
-                            }}
-                            title="Quick View"
-                            aria-label="Quick View"
-                            className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 hover:text-rose-600 hover:border-rose-300 hover:bg-rose-50 transition shrink-0 cursor-pointer shadow-xs group/qv"
-                        >
-                            <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover/qv:scale-110 transition-transform" />
-                        </button>
-                    )}
-                </div>
+                        {/* Buy Now Button */}
+                        {showBuyNow && !isOutOfStock && (
+                            <Link
+                                href={route('checkout.index')}
+                                onClick={() => onAddToCart(product, selectedVariant, 1)}
+                                title="Buy Now"
+                                aria-label="Buy Now"
+                                className="w-full sm:flex-1 min-w-0 justify-center hover:opacity-95 text-xs font-bold px-3 h-9 sm:h-10 rounded-full transition-all duration-200 flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer whitespace-nowrap group/buy"
+                                style={{ backgroundColor: btnBuyNowBg, color: btnBuyNowText }}
+                            >
+                                <ArrowRight className="w-4 h-4 shrink-0 transition-transform group-hover/buy:translate-x-0.5" />
+                                <span className="whitespace-nowrap font-bold">Buy Now</span>
+                            </Link>
+                        )}
+
+                        {/* View Details Button */}
+                        {showViewButton && (
+                            <Link
+                                href={route('product.show', { slug: product.slug })}
+                                title="View Product"
+                                aria-label="View Product"
+                                className="w-full sm:w-auto px-4 flex items-center justify-center rounded-full border border-slate-200 hover:opacity-95 transition-all duration-200 shrink-0 cursor-pointer shadow-xs active:scale-95 text-xs font-bold h-9 sm:h-10 gap-1.5"
+                                style={{ backgroundColor: btnViewBg, color: btnViewText }}
+                            >
+                                <Eye className="w-4 h-4 shrink-0" />
+                                <span className="whitespace-nowrap">View</span>
+                            </Link>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

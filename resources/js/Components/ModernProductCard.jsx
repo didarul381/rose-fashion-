@@ -250,7 +250,7 @@ export default function ModernProductCard({ product, onAddToCart, settings = {} 
         buttonAnim === 'pulse' ? 'animate-pulse' :
         buttonAnim === 'bounce' ? 'animate-bounce' : '';
 
-    const commonBtnStyle = `flex h-9 w-full items-center justify-center gap-1.5 px-3 text-[10.5px] font-semibold tracking-tight transition-all shadow-[0_6px_14px_rgba(15,23,42,0.10)] hover:shadow-md md:h-10 md:gap-2 md:text-[12px] md:font-bold ${buttonRadiusClass} ${buttonHoverClass} ${buttonAnimClass}`;
+    const commonBtnStyle = `flex h-9 w-full items-center justify-center gap-1.5 px-3 text-[10.5px] font-semibold tracking-tight transition-all shadow-[0_6px_14px_rgba(15,23,42,0.10)] hover:shadow-md md:h-10 md:gap-2 md:text-[12px] md:font-bold ${buttonRadiusClass} ${buttonHoverClass} ${buttonAnimClass} whitespace-nowrap`;
 
     const primaryAction = isOutOfStock ? (
         <button
@@ -258,16 +258,19 @@ export default function ModernProductCard({ product, onAddToCart, settings = {} 
             className={`${commonBtnStyle} cursor-not-allowed bg-slate-200 text-slate-400`}
         >
             <ShoppingCart className="h-3.5 w-3.5 shrink-0 md:h-4 md:w-4" strokeWidth={2.1} />
-            <span>Out of stock</span>
+            <span className="hidden sm:inline">Out of stock</span>
+            <span className="sm:hidden">Out</span>
         </button>
     ) : (
         <button
             onClick={() => onAddToCart?.(product, selectedVariant, 1)}
             className={`${commonBtnStyle}`}
             style={{ backgroundColor: buttonPrimaryBg, color: buttonPrimaryText }}
+            title="Add to cart"
+            aria-label="Add to cart"
         >
             <ShoppingCart className="h-3.5 w-3.5 shrink-0 md:h-4 md:w-4" strokeWidth={2.1} />
-            {showActionText ? 'Add to cart' : ''}
+            {showActionText ? <span className="hidden sm:inline">Add to cart</span> : ''}
         </button>
     );
 
